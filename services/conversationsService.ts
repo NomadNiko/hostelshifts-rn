@@ -30,9 +30,10 @@ export interface Conversation {
 export interface Message {
   _id: string;
   conversationId: string;
-  senderId: User;
+  senderId?: User; // Optional for system messages
   content: string;
   timestamp: string;
+  type?: 'user' | 'system'; // Added type field
   createdAt: string;
   updatedAt: string;
 }
@@ -90,10 +91,10 @@ const cleanMessageData = (message: any): Message => {
     ...message,
     _id: convertBufferToId(message._id),
     conversationId: convertBufferToId(message.conversationId),
-    senderId: {
+    senderId: message.senderId ? {
       ...message.senderId,
       _id: convertBufferToId(message.senderId._id),
-    },
+    } : undefined,
   };
 };
 
@@ -316,6 +317,51 @@ class ConversationsService {
       return cleanedConversation;
     } catch (error) {
       console.error('Update conversation error:', error);
+      throw error;
+    }
+  }
+
+  async addParticipant(conversationId: string, participantId: string): Promise<Conversation> {
+    try {
+      const headers = await this.getAuthHeaders();
+
+      const response = await fetch(`${API_BASE}/conversations/${conversationId}/participants`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ participantId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to add participant: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const cleanedConversation = cleanConversationData(data);
+      return cleanedConversation;
+    } catch (error) {
+      console.error('Add participant error:', error);
+      throw error;
+    }
+  }
+
+  async removeParticipant(conversationId: string, participantId: string): Promise<Conversation> {
+    try {
+      const headers = await this.getAuthHeaders();
+
+      const response = await fetch(`${API_BASE}/conversations/${conversationId}/participants/${participantId}`, {
+        method: 'DELETE',
+        headers,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to remove participant: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const cleanedConversation = cleanConversationData(data);
+      return cleanedConversation;
+    } catch (error) {
+      console.error('Remove participant error:', error);
       throw error;
     }
   }

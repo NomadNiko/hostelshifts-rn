@@ -32,6 +32,8 @@ interface ConversationsContextType {
   searchUsers: (searchTerm: string) => Promise<User[]>;
   refreshData: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
+  addParticipant: (conversationId: string, participantId: string) => Promise<Conversation>;
+  removeParticipant: (conversationId: string, participantId: string) => Promise<Conversation>;
 }
 
 const ConversationsContext = createContext<ConversationsContextType | undefined>(undefined);
@@ -244,6 +246,57 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     await loadConversations();
   };
 
+  const addParticipant = async (conversationId: string, participantId: string): Promise<Conversation> => {
+    try {
+      const updatedConversation = await conversationsService.addParticipant(conversationId, participantId);
+
+      // Update the conversation in the list
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv._id === conversationId ? updatedConversation : conv
+        )
+      );
+
+      // Update current conversation if it's the one being updated
+      if (currentConversation?._id === conversationId) {
+        setCurrentConversation(updatedConversation);
+      }
+
+      // Refresh messages to show the system message
+      await loadMessages(conversationId, 1);
+
+      return updatedConversation;
+    } catch (error) {
+      console.error('❌ ConversationsContext: Error adding participant:', error);
+      setError(error instanceof Error ? error.message : 'Failed to add participant');
+      throw error;
+    }
+  };
+
+  const removeParticipant = async (conversationId: string, participantId: string): Promise<Conversation> => {
+    try {
+      const updatedConversation = await conversationsService.removeParticipant(conversationId, participantId);
+
+      // Update the conversation in the list
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv._id === conversationId ? updatedConversation : conv
+        )
+      );
+
+      // Update current conversation if it's the one being updated
+      if (currentConversation?._id === conversationId) {
+        setCurrentConversation(updatedConversation);
+      }
+
+      return updatedConversation;
+    } catch (error) {
+      console.error('❌ ConversationsContext: Error removing participant:', error);
+      setError(error instanceof Error ? error.message : 'Failed to remove participant');
+      throw error;
+    }
+  };
+
   // Load conversations when provider mounts
   useEffect(() => {
     loadConversations();
@@ -267,6 +320,8 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     searchUsers,
     refreshData,
     deleteConversation,
+    addParticipant,
+    removeParticipant,
   };
 
   return <ConversationsContext.Provider value={value}>{children}</ConversationsContext.Provider>;

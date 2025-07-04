@@ -70,11 +70,16 @@ export default function ProfileTab() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       {/* Header */}
-      <SafeAreaView>
-        <View className="flex-row items-center justify-between px-6 py-4">
-          <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
-            Profile
-          </Text>
+      <SafeAreaView edges={['top']}>
+        <View className="flex-row items-center justify-between px-6 pb-4">
+          <View>
+            <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+              Profile
+            </Text>
+            <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
+              Welcome back, {user?.firstName || user?.email}!
+            </Text>
+          </View>
           <ThemeToggle />
         </View>
       </SafeAreaView>

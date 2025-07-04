@@ -42,35 +42,40 @@ export default function WeekDayHeader({
         {weekDates.map((date, index) => {
           const hasShifts = getShiftsForDate(date).length > 0;
           const dayName = getDayName(date).substring(0, 1); // First letter only
-          const dayNumber = new Date(date).getDate();
+          // Fix timezone issue by parsing as UTC
+          const dayNumber = new Date(date + 'T00:00:00.000Z').getUTCDate();
           const isSelected = selectedDayFilter === date;
+          
+          // Check if this date is today
+          const today = new Date().toISOString().split('T')[0];
+          const isToday = date === today;
 
           return (
             <TouchableOpacity
               key={date}
               className="items-center justify-center rounded-full"
               style={{
-                width: 52,
-                height: 52,
+                width: 44, // Smaller button
+                height: 44, // Smaller button
                 backgroundColor: hasShifts ? colors.primary : colors.grey5,
                 opacity: selectedDayFilter === null 
                   ? (hasShifts ? 1 : 0.5)
                   : isSelected 
                     ? 1 
                     : 0.3,
-                borderWidth: isSelected ? 2 : 0,
-                borderColor: colors.background,
+                borderWidth: isSelected ? 2 : (isToday ? 2 : 0), // Thinner yellow ring
+                borderColor: isSelected ? colors.background : (isToday ? '#fbbf24' : 'transparent'), // Yellow ring for today
               }}
               onPress={() => hasShifts && onDayToggle(date)}
               disabled={!hasShifts}
               activeOpacity={0.7}>
               <Text
-                className="text-xs font-bold"
+                className="text-base font-bold" // Even larger font
                 style={{ color: hasShifts ? 'white' : colors.grey3 }}>
                 {dayName}
               </Text>
               <Text
-                className="text-xs font-semibold"
+                className="text-base font-semibold" // Even larger font
                 style={{ color: hasShifts ? 'white' : colors.grey3 }}>
                 {dayNumber}
               </Text>

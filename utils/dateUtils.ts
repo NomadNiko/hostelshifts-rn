@@ -39,7 +39,8 @@ export const formatMessageTime = (dateString: string): string => {
 
 export const formatDate = (dateString: string): string => {
   try {
-    const date = new Date(dateString);
+    // Fix timezone issue by parsing as UTC
+    const date = new Date(dateString + 'T00:00:00.000Z');
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
@@ -47,6 +48,7 @@ export const formatDate = (dateString: string): string => {
       month: 'short',
       day: 'numeric',
       year: 'numeric',
+      timeZone: 'UTC',
     });
   } catch {
     return 'Invalid Date';

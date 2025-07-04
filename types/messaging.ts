@@ -22,9 +22,10 @@ export interface MessageSender extends User {
 export interface Message {
   _id: string;
   conversationId: string;
-  senderId: MessageSender;
+  senderId?: MessageSender; // Optional for system messages
   content: string;
   timestamp: string;
+  type?: 'user' | 'system'; // Added type field
   createdAt: string;
   updatedAt: string;
 }

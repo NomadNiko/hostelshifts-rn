@@ -17,8 +17,40 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const colors = isDark ? COLORS.dark : COLORS.light;
 
-  const senderName = getUserDisplayName(message.senderId);
+  const isSystemMessage = message.type === 'system';
+  const senderName = message.senderId ? getUserDisplayName(message.senderId) : '';
   const timeText = formatMessageTime(message.timestamp);
+
+  // System message rendering
+  if (isSystemMessage) {
+    return (
+      <View>
+        {/* Time gap separator */}
+        {showTimeGap && (
+          <View className="my-6 items-center">
+            <View className="rounded px-4 py-2" style={{ backgroundColor: colors.grey5 }}>
+              <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
+                {timeText}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* System message */}
+        <View className="my-4 items-center">
+          <View
+            className="rounded-full px-4 py-2"
+            style={{ backgroundColor: colors.grey5 }}>
+            <Text
+              className="text-center text-sm font-medium"
+              style={{ color: colors.grey2 }}>
+              {message.content}
+            </Text>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View>
@@ -49,7 +81,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         <View className="flex-row items-end">
           {/* Avatar for other users (only on last message in group) */}
-          {!isOwnMessage && isLastInGroup && (
+          {!isOwnMessage && isLastInGroup && message.senderId && (
             <View className="mb-1 mr-3">
               <AvatarDisplay
                 user={message.senderId}

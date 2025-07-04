@@ -44,6 +44,7 @@ export default function SchedulesScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDayFilter, setSelectedDayFilter] = useState<string | null>(null);
   const [selectedWeekStart, setSelectedWeekStart] = useState<string>(getCurrentWeekStartDate());
+  const [scheduleView, setScheduleView] = useState<'my' | 'full'>('full');
 
   const colors = isDark ? COLORS.dark : COLORS.light;
 
@@ -164,10 +165,26 @@ export default function SchedulesScreen() {
     if (!weekSchedule) return [];
     
     // Use the scheduleShifts from context (they should be loaded for the current weekSchedule)
-    const shifts = scheduleShifts.filter((shift) => {
+    let shifts = scheduleShifts.filter((shift) => {
       const shiftDate = shift.date ? shift.date.split('T')[0] : '';
       return shiftDate === date;
     });
+
+    // Filter based on schedule view
+    if (scheduleView === 'my') {
+      console.log('DEBUG: Current user ID:', user?._id);
+      console.log('DEBUG: Sample shift user object:', JSON.stringify(shifts[0]?.user, null, 2));
+      
+      shifts = shifts.filter((shift) => {
+        // Try different possible user ID fields
+        const userId = shift.user?._id || shift.user?.id;
+        const match = shift.user && userId === user?._id;
+        console.log('DEBUG: Shift user:', { _id: shift.user?._id, id: shift.user?.id, firstName: shift.user?.firstName }, 'Match:', match);
+        return match;
+      });
+      
+      console.log('DEBUG: Filtered shifts:', shifts.length);
+    }
 
     return shifts.sort((a, b) => {
       const timeA = a.shiftType?.startTime || '00:00';
@@ -195,9 +212,14 @@ export default function SchedulesScreen() {
       <View className="flex-1" style={{ backgroundColor: colors.background }}>
         <SafeAreaView edges={['top']}>
           <View className="flex-row items-center justify-between px-6 pb-4">
-            <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
-              Schedules
-            </Text>
+            <View>
+              <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
+                Schedules
+              </Text>
+              <Text className="text-sm" style={{ color: colors.grey }}>
+                Welcome back, {user?.firstName || user?.email}!
+              </Text>
+            </View>
           </View>
         </SafeAreaView>
         <View className="flex-1 items-center justify-center p-6">
@@ -299,6 +321,42 @@ export default function SchedulesScreen() {
           )}
         </View>
 
+        {/* Schedule View Toggle */}
+        <View className="px-6 py-4">
+          <View
+            className="flex-row rounded-lg p-1"
+            style={{ backgroundColor: colors.grey5 }}>
+            <TouchableOpacity
+              className="flex-1 rounded-md py-2"
+              style={{
+                backgroundColor: scheduleView === 'my' ? colors.primary : 'transparent',
+              }}
+              onPress={() => setScheduleView('my')}>
+              <Text
+                className="text-center font-semibold"
+                style={{
+                  color: scheduleView === 'my' ? 'white' : colors.grey2,
+                }}>
+                My Schedule
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="flex-1 rounded-md py-2"
+              style={{
+                backgroundColor: scheduleView === 'full' ? colors.primary : 'transparent',
+              }}
+              onPress={() => setScheduleView('full')}>
+              <Text
+                className="text-center font-semibold"
+                style={{
+                  color: scheduleView === 'full' ? 'white' : colors.grey2,
+                }}>
+                Full Schedule
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
         {/* Schedule Content */}
         {weekSchedule ? (
           <>
@@ -317,8 +375,8 @@ export default function SchedulesScreen() {
               <View className="mb-3">
                 <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>
                   {selectedDayFilter
-                    ? `${getDayName(selectedDayFilter)} Schedule`
-                    : 'Week Schedule'}
+                    ? `${getDayName(selectedDayFilter)} ${scheduleView === 'my' ? 'My' : 'Full'} Schedule`
+                    : `${scheduleView === 'my' ? 'My' : 'Full'} Week Schedule`}
                 </Text>
                 {selectedDayFilter && (
                   <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>

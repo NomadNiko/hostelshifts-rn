@@ -36,7 +36,7 @@ export default function TabLayout() {
         name="time-clock"
         options={{
           title: 'Time Clock',
-          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="timer" color={color} />,
           headerShown: false,
         }}
       />
@@ -44,7 +44,7 @@ export default function TabLayout() {
         name="conversations"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color }) => <TabBarIcon name="comments" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="chatbubbles" color={color} />,
           headerShown: false,
         }}
       />
@@ -52,7 +52,7 @@ export default function TabLayout() {
         name="two"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+          tabBarIcon: ({ color }) => <TabBarIcon name="person" color={color} />,
           headerShown: false,
         }}
       />

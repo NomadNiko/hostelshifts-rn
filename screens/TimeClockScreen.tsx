@@ -123,7 +123,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
 
   const renderTimeEntry = (entry: TimeClockEntry, index: number) => (
     <View
-      key={entry._id}
+      key={typeof entry._id === 'string' ? entry._id : `entry-${index}-${entry.clockInTime}`}
       style={{
         backgroundColor: colors.card,
         borderRadius: 12,
