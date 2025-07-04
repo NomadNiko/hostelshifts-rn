@@ -15,9 +15,9 @@ export default function ThemeToggle({ size = 24 }: ThemeToggleProps) {
     <Pressable
       onPress={toggleTheme}
       className="rounded-full p-2"
-      style={{ 
+      style={{
         backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-        marginRight: 4 
+        marginRight: 4,
       }}>
       <Ionicons
         name={isDark ? 'sunny' : 'moon'}

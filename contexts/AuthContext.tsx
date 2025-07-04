@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import authService, { User } from '../services/authService';
+import { preloadAvatarImages } from '../utils/imagePreloader';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -8,6 +9,7 @@ interface AuthContextType {
   checkSession: () => Promise<void>;
   refreshUserData: () => Promise<void>;
   updateUser: (user: User) => void;
+  updateAvatar: (avatarNumber: number) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -36,6 +38,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userInfo = await authService.getCurrentUser();
         console.log('AuthContext: User info:', userInfo);
         setUser(userInfo);
+        
+        // Preload avatar images for better performance
+        preloadAvatarImages().catch(error => {
+          console.warn('Avatar preloading failed:', error);
+        });
       } else {
         setUser(null);
       }
@@ -64,6 +71,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(user);
   };
 
+  const updateAvatar = async (avatarNumber: number) => {
+    try {
+      const updatedUser = await authService.updateAvatar(avatarNumber);
+      if (updatedUser) {
+        setUser(updatedUser);
+      }
+    } catch (error) {
+      console.error('Error updating avatar:', error);
+      throw error;
+    }
+  };
+
   const signOut = async () => {
     try {
       await authService.logout();
@@ -87,6 +106,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         checkSession,
         refreshUserData,
         updateUser,
+        updateAvatar,
         signOut,
       }}>
       {children}

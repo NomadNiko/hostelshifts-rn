@@ -79,12 +79,17 @@ const AuthScreen: React.FC = () => {
         Alert.alert(
           'Account Created!',
           'Your account has been created successfully. Please sign in with your credentials.',
-          [{ text: 'OK', onPress: () => {
-            setIsSignUp(false);
-            setConfirmPassword('');
-            setFirstName('');
-            setLastName('');
-          }}]
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                setIsSignUp(false);
+                setConfirmPassword('');
+                setFirstName('');
+                setLastName('');
+              },
+            },
+          ]
         );
       } else {
         console.log('AuthScreen: Calling login');
@@ -99,7 +104,7 @@ const AuthScreen: React.FC = () => {
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      
+
       // Provide more specific error messages
       let errorMessage = 'Authentication failed';
       if (error.message) {
@@ -115,7 +120,7 @@ const AuthScreen: React.FC = () => {
           errorMessage = error.message;
         }
       }
-      
+
       Alert.alert('Authentication Error', errorMessage);
     } finally {
       setIsLoading(false);
@@ -164,22 +169,14 @@ const AuthScreen: React.FC = () => {
           <View className="flex-1 items-center justify-center px-6">
             {/* Header */}
             <View className="mb-12 items-center">
-              <Text
-                className="text-4xl font-bold text-center"
-                style={{ color: colors.foreground }}>
+              <Text className="text-center text-4xl font-bold" style={{ color: colors.foreground }}>
                 {isSignUp ? 'Create Account' : 'HostelShifts'}
               </Text>
-              <Text
-                className="mt-3 text-center text-lg"
-                style={{ color: colors.grey }}>
-                {isSignUp
-                  ? 'Sign up to manage your shifts'
-                  : 'Sign in to view your schedule'}
+              <Text className="mt-3 text-center text-lg" style={{ color: colors.grey }}>
+                {isSignUp ? 'Sign up to manage your shifts' : 'Sign in to view your schedule'}
               </Text>
               {!isSignUp && (
-                <Text
-                  className="mt-2 text-center text-sm"
-                  style={{ color: colors.grey2 }}>
+                <Text className="mt-2 text-center text-sm" style={{ color: colors.grey2 }}>
                   Test: aloha@ixplor.app / password
                 </Text>
               )}
@@ -298,7 +295,7 @@ const AuthScreen: React.FC = () => {
 
               {/* Forgot Password Link (only for sign in) */}
               {!isSignUp && (
-                <View className="items-end mt-2">
+                <View className="mt-2 items-end">
                   <TouchableOpacity onPress={() => setShowForgotPassword(true)}>
                     <Text className="text-sm" style={{ color: colors.primary }}>
                       Forgot password?
@@ -309,7 +306,7 @@ const AuthScreen: React.FC = () => {
 
               {/* Submit Button */}
               <TouchableOpacity
-                className={`h-11 w-full items-center justify-center rounded-lg mt-6 ${isLoading ? 'opacity-50' : ''}`}
+                className={`mt-6 h-11 w-full items-center justify-center rounded-lg ${isLoading ? 'opacity-50' : ''}`}
                 style={{ backgroundColor: colors.primary }}
                 onPress={handleAuth}
                 disabled={isLoading}>
@@ -350,22 +347,19 @@ const AuthScreen: React.FC = () => {
         transparent={true}
         animationType="fade"
         onRequestClose={() => setShowForgotPassword(false)}>
-        <View 
-          className="flex-1 items-center justify-center bg-black/50 p-6">
-          <View 
+        <View className="flex-1 items-center justify-center bg-black/50 p-6">
+          <View
             className="w-full max-w-sm rounded-2xl p-8"
             style={{ backgroundColor: colors.background }}>
-            <Text 
-              className="mb-2 text-2xl font-bold text-center"
+            <Text
+              className="mb-2 text-center text-2xl font-bold"
               style={{ color: colors.foreground }}>
               Reset Password
             </Text>
-            <Text 
-              className="mb-8 text-center text-base"
-              style={{ color: colors.grey }}>
-              Enter your email and we'll send reset instructions.
+            <Text className="mb-8 text-center text-base" style={{ color: colors.grey }}>
+              {"Enter your email and we'll send reset instructions."}
             </Text>
-            
+
             <View className="mb-6">
               <TextInput
                 className="h-11 w-full rounded-lg border px-4 text-base"
@@ -386,27 +380,23 @@ const AuthScreen: React.FC = () => {
 
             <View className="flex-row space-x-3">
               <TouchableOpacity
-                className="flex-1 h-11 items-center justify-center rounded-lg border"
+                className="h-11 flex-1 items-center justify-center rounded-lg border"
                 style={{ borderColor: '#DBE2E9' }}
                 onPress={() => setShowForgotPassword(false)}>
-                <Text 
-                  className="text-base font-medium"
-                  style={{ color: colors.foreground }}>
+                <Text className="text-base font-medium" style={{ color: colors.foreground }}>
                   Cancel
                 </Text>
               </TouchableOpacity>
-              
+
               <TouchableOpacity
-                className={`flex-1 h-11 items-center justify-center rounded-lg ${isLoading ? 'opacity-50' : ''}`}
+                className={`h-11 flex-1 items-center justify-center rounded-lg ${isLoading ? 'opacity-50' : ''}`}
                 style={{ backgroundColor: colors.primary }}
                 onPress={handleForgotPassword}
                 disabled={isLoading}>
                 {isLoading ? (
                   <ActivityIndicator color="white" size="small" />
                 ) : (
-                  <Text className="text-base font-semibold text-white">
-                    Send Reset
-                  </Text>
+                  <Text className="text-base font-semibold text-white">Send Reset</Text>
                 )}
               </TouchableOpacity>
             </View>

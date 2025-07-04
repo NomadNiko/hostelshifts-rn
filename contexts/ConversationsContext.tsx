@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import conversationsService, { 
-  Conversation, 
-  Message, 
-  MessagesResponse, 
-  CreateConversationDto, 
+import conversationsService, {
+  Conversation,
+  Message,
+  MessagesResponse,
+  CreateConversationDto,
   SendMessageDto,
-  User 
+  User,
 } from '../services/conversationsService';
 
 interface ConversationsContextType {
@@ -62,15 +62,15 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
       setIsLoading(true);
       setError(null);
       console.log('🚀 ConversationsContext: Starting to load conversations...');
-      
+
       const conversationsData = await conversationsService.getConversations();
       console.log('📥 ConversationsContext: Received conversations data:', conversationsData);
-      
+
       // Sort conversations by lastMessageAt (most recent first)
-      const sortedConversations = conversationsData.sort((a, b) => 
-        new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+      const sortedConversations = conversationsData.sort(
+        (a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
       );
-      
+
       setConversations(sortedConversations);
       console.log('✅ ConversationsContext: Conversations loaded successfully');
     } catch (error) {
@@ -88,40 +88,43 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
   const loadMessages = async (conversationId: string, page: number = 1) => {
     try {
-      console.log(`📝 ConversationsContext: Loading messages for conversation ${conversationId}, page ${page}`);
-      
+      console.log(
+        `📝 ConversationsContext: Loading messages for conversation ${conversationId}, page ${page}`
+      );
+
       const messagesResponse: MessagesResponse = await conversationsService.getMessages(
-        conversationId, 
-        page, 
+        conversationId,
+        page,
         20
       );
-      
+
       console.log('📥 ConversationsContext: Received messages:', messagesResponse);
-      
-      setMessages(prev => {
+
+      setMessages((prev) => {
         const existingMessages = prev[conversationId] || [];
         // Messages from API are already in chronological order (oldest first)
         // For page 1, replace all messages. For subsequent pages, append to existing
-        const newMessages = page === 1 
-          ? messagesResponse.messages 
-          : [...existingMessages, ...messagesResponse.messages];
-        
+        const newMessages =
+          page === 1
+            ? messagesResponse.messages
+            : [...existingMessages, ...messagesResponse.messages];
+
         return {
           ...prev,
           [conversationId]: newMessages,
         };
       });
-      
-      setMessagePages(prev => ({
+
+      setMessagePages((prev) => ({
         ...prev,
         [conversationId]: page,
       }));
-      
-      setHasMoreMessages(prev => ({
+
+      setHasMoreMessages((prev) => ({
         ...prev,
         [conversationId]: messagesResponse.messages.length === messagesResponse.limit,
       }));
-      
+
       console.log('✅ ConversationsContext: Messages loaded successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error loading messages:', error);
@@ -133,29 +136,27 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     try {
       setSendingMessage(true);
       console.log(`📤 ConversationsContext: Sending message to ${conversationId}:`, content);
-      
+
       const messageData: SendMessageDto = { content };
       const sentMessage = await conversationsService.sendMessage(conversationId, messageData);
-      
+
       console.log('📤 ConversationsContext: Message sent:', sentMessage);
-      
+
       // Add the new message to the end of the messages list (newest at bottom)
-      setMessages(prev => ({
+      setMessages((prev) => ({
         ...prev,
         [conversationId]: [...(prev[conversationId] || []), sentMessage],
       }));
-      
+
       // Update the conversation's lastMessageAt
-      setConversations(prev => 
-        prev.map(conv => 
-          conv._id === conversationId 
-            ? { ...conv, lastMessageAt: sentMessage.timestamp }
-            : conv
-        ).sort((a, b) => 
-          new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
-        )
+      setConversations((prev) =>
+        prev
+          .map((conv) =>
+            conv._id === conversationId ? { ...conv, lastMessageAt: sentMessage.timestamp } : conv
+          )
+          .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
       );
-      
+
       console.log('✅ ConversationsContext: Message sent successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error sending message:', error);
@@ -170,13 +171,13 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     try {
       setIsLoading(true);
       console.log('🆕 ConversationsContext: Creating conversation:', data);
-      
+
       const newConversation = await conversationsService.createConversation(data);
       console.log('🆕 ConversationsContext: Conversation created:', newConversation);
-      
+
       // Add the new conversation to the list
-      setConversations(prev => [newConversation, ...prev]);
-      
+      setConversations((prev) => [newConversation, ...prev]);
+
       console.log('✅ ConversationsContext: Conversation created successfully');
       return newConversation;
     } catch (error) {
@@ -191,10 +192,10 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
   const searchUsers = async (searchTerm: string): Promise<User[]> => {
     try {
       console.log('🔍 ConversationsContext: Searching users:', searchTerm);
-      
+
       const users = await conversationsService.searchUsers(searchTerm);
       console.log('👥 ConversationsContext: Users found:', users);
-      
+
       return users;
     } catch (error) {
       console.error('❌ ConversationsContext: Error searching users:', error);
@@ -206,24 +207,24 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
   const deleteConversation = async (conversationId: string) => {
     try {
       console.log('🗑️ ConversationsContext: Deleting conversation:', conversationId);
-      
+
       await conversationsService.deleteConversation(conversationId);
-      
+
       // Remove from conversations list
-      setConversations(prev => prev.filter(conv => conv._id !== conversationId));
-      
+      setConversations((prev) => prev.filter((conv) => conv._id !== conversationId));
+
       // Clear messages for this conversation
-      setMessages(prev => {
+      setMessages((prev) => {
         const newMessages = { ...prev };
         delete newMessages[conversationId];
         return newMessages;
       });
-      
+
       // Clear current conversation if it's the one being deleted
       if (currentConversation?._id === conversationId) {
         setCurrentConversation(null);
       }
-      
+
       console.log('✅ ConversationsContext: Conversation deleted successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error deleting conversation:', error);
@@ -260,9 +261,5 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     deleteConversation,
   };
 
-  return (
-    <ConversationsContext.Provider value={value}>
-      {children}
-    </ConversationsContext.Provider>
-  );
+  return <ConversationsContext.Provider value={value}>{children}</ConversationsContext.Provider>;
 };

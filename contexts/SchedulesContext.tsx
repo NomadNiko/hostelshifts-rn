@@ -1,4 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from 'react';
 import schedulesService, { Schedule, ScheduleShift, Employee } from '../services/schedulesService';
 
 interface SchedulesContextType {
@@ -30,51 +37,44 @@ export function SchedulesProvider({ children }: SchedulesProviderProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadSchedules = async () => {
+  const loadSchedules = useCallback(async () => {
     try {
-      console.log('🚀 SchedulesContext: Starting to load schedules...');
       setIsLoading(true);
       setError(null);
       const data = await schedulesService.getSchedules();
-      console.log('📥 SchedulesContext: Received schedules data:', data);
       setSchedules(data);
-      
+
       // Set the most recent schedule as current if none is selected
       if (!currentSchedule && data.length > 0) {
-        console.log('🎯 SchedulesContext: Setting current schedule...');
         const mostRecent = data.sort((a, b) => {
-          console.log('📅 Comparing dates:', a.createdAt, 'vs', b.createdAt);
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         })[0];
-        console.log('✅ SchedulesContext: Most recent schedule selected:', mostRecent);
         setCurrentSchedule(mostRecent);
       }
     } catch (err: any) {
-      console.error('❌ SchedulesContext: Load schedules error:', err);
+      console.error('Load schedules error:', err.message);
       setError(err.message || 'Failed to load schedules');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [currentSchedule]);
 
-  const loadScheduleShifts = async (scheduleId: string) => {
+  const loadScheduleShifts = useCallback(async (scheduleId: string) => {
     try {
-      console.log('🚀 SchedulesContext: Starting to load shifts for schedule:', scheduleId);
       setIsLoading(true);
       setError(null);
       const data = await schedulesService.getScheduleShifts(scheduleId);
-      console.log('📥 SchedulesContext: Received shifts data:', data);
       setScheduleShifts(data);
     } catch (err: any) {
       // Don't set error for missing shifts - it's not critical
-      console.warn('❌ SchedulesContext: Load schedule shifts error:', err);
+      console.warn('Load schedule shifts error:', err.message);
       setScheduleShifts([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     try {
       setError(null);
       const data = await schedulesService.getEmployees();
@@ -84,24 +84,24 @@ export function SchedulesProvider({ children }: SchedulesProviderProps) {
       console.warn('Load employees error:', err);
       setEmployees([]);
     }
-  };
+  }, []);
 
   const publishSchedule = async (scheduleId: string) => {
     try {
       setIsLoading(true);
       setError(null);
       await schedulesService.publishSchedule(scheduleId);
-      
+
       // Update the schedule status locally
-      setSchedules(prev => prev.map(schedule => 
-        schedule.id === scheduleId 
-          ? { ...schedule, status: 'PUBLISHED' as const }
-          : schedule
-      ));
+      setSchedules((prev) =>
+        prev.map((schedule) =>
+          schedule.id === scheduleId ? { ...schedule, status: 'PUBLISHED' as const } : schedule
+        )
+      );
 
       // Update current schedule if it's the one being published
       if (currentSchedule?.id === scheduleId) {
-        setCurrentSchedule(prev => prev ? { ...prev, status: 'PUBLISHED' } : null);
+        setCurrentSchedule((prev) => (prev ? { ...prev, status: 'PUBLISHED' } : null));
       }
     } catch (err: any) {
       setError(err.message || 'Failed to publish schedule');
@@ -130,16 +130,16 @@ export function SchedulesProvider({ children }: SchedulesProviderProps) {
         console.error('Failed to initialize schedule data:', error);
       }
     };
-    
+
     initializeData();
-  }, []);
+  }, [loadSchedules, loadEmployees]);
 
   // Load shifts when current schedule changes
   useEffect(() => {
     if (currentSchedule) {
       loadScheduleShifts(currentSchedule.id);
     }
-  }, [currentSchedule]);
+  }, [currentSchedule, loadScheduleShifts]);
 
   const value: SchedulesContextType = {
     schedules,
@@ -156,11 +156,7 @@ export function SchedulesProvider({ children }: SchedulesProviderProps) {
     refreshData,
   };
 
-  return (
-    <SchedulesContext.Provider value={value}>
-      {children}
-    </SchedulesContext.Provider>
-  );
+  return <SchedulesContext.Provider value={value}>{children}</SchedulesContext.Provider>;
 }
 
 export function useSchedules() {

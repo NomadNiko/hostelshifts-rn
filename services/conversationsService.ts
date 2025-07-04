@@ -8,6 +8,7 @@ export interface User {
   email: string;
   firstName?: string;
   lastName?: string;
+  avatar?: number | null;
   role?: {
     id: string | number;
     _id?: string;
@@ -20,6 +21,7 @@ export interface Conversation {
   participants: User[];
   name?: string;
   lastMessageAt: string;
+  lastMessage?: Message;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,8 +56,8 @@ export interface SendMessageDto {
 const convertBufferToId = (obj: any): string => {
   if (obj && obj.buffer && typeof obj.buffer === 'object') {
     const buffer = obj.buffer;
-    const bytes = Object.keys(buffer).map(key => buffer[key]);
-    return bytes.map(b => b.toString(16).padStart(2, '0')).join('');
+    const bytes = Object.keys(buffer).map((key) => buffer[key]);
+    return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
   }
   return obj;
 };
@@ -65,10 +67,12 @@ const cleanConversationData = (conversation: any): Conversation => {
   return {
     ...conversation,
     _id: convertBufferToId(conversation._id),
-    participants: conversation.participants?.map((p: any) => ({
-      ...p,
-      _id: convertBufferToId(p._id),
-    })) || [],
+    participants:
+      conversation.participants?.map((p: any) => ({
+        ...p,
+        _id: convertBufferToId(p._id),
+      })) || [],
+    lastMessage: conversation.lastMessage ? cleanMessageData(conversation.lastMessage) : undefined,
   };
 };
 
@@ -98,7 +102,7 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       console.log('🔍 Fetching conversations from:', `${API_BASE}/conversations`);
-      
+
       const response = await fetch(`${API_BASE}/conversations`, {
         method: 'GET',
         headers,
@@ -110,13 +114,13 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('💬 Raw conversations data from backend:', JSON.stringify(data, null, 2));
-      
+
       if (Array.isArray(data)) {
         const cleanedConversations = data.map(cleanConversationData);
         console.log('💬 Cleaned conversations:', JSON.stringify(cleanedConversations, null, 2));
         return cleanedConversations;
       }
-      
+
       return [];
     } catch (error) {
       console.error('Get conversations error:', error);
@@ -128,7 +132,7 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       console.log('🔍 Fetching conversation:', conversationId);
-      
+
       const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
         method: 'GET',
         headers,
@@ -140,7 +144,7 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('💬 Raw conversation data:', JSON.stringify(data, null, 2));
-      
+
       const cleanedConversation = cleanConversationData(data);
       console.log('💬 Cleaned conversation:', JSON.stringify(cleanedConversation, null, 2));
       return cleanedConversation;
@@ -150,12 +154,16 @@ class ConversationsService {
     }
   }
 
-  async getMessages(conversationId: string, page: number = 1, limit: number = 20): Promise<MessagesResponse> {
+  async getMessages(
+    conversationId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<MessagesResponse> {
     try {
       const headers = await this.getAuthHeaders();
       const url = `${API_BASE}/conversations/${conversationId}/messages?page=${page}&limit=${limit}`;
       console.log('🔍 Fetching messages from:', url);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers,
@@ -167,12 +175,12 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('📝 Raw messages data:', JSON.stringify(data, null, 2));
-      
+
       const cleanedMessages = {
         ...data,
         messages: data.messages?.map(cleanMessageData) || [],
       };
-      
+
       console.log('📝 Cleaned messages:', JSON.stringify(cleanedMessages, null, 2));
       return cleanedMessages;
     } catch (error) {
@@ -185,7 +193,7 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       console.log('📤 Sending message to:', conversationId, messageData);
-      
+
       const response = await fetch(`${API_BASE}/conversations/${conversationId}/messages`, {
         method: 'POST',
         headers,
@@ -198,7 +206,7 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('📤 Raw sent message data:', JSON.stringify(data, null, 2));
-      
+
       const cleanedMessage = cleanMessageData(data);
       console.log('📤 Cleaned sent message:', JSON.stringify(cleanedMessage, null, 2));
       return cleanedMessage;
@@ -212,7 +220,7 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       console.log('🆕 Creating conversation:', conversationData);
-      
+
       const response = await fetch(`${API_BASE}/conversations`, {
         method: 'POST',
         headers,
@@ -225,7 +233,7 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('🆕 Raw created conversation data:', JSON.stringify(data, null, 2));
-      
+
       const cleanedConversation = cleanConversationData(data);
       console.log('🆕 Cleaned created conversation:', JSON.stringify(cleanedConversation, null, 2));
       return cleanedConversation;
@@ -238,9 +246,9 @@ class ConversationsService {
   async searchUsers(searchTerm: string): Promise<User[]> {
     try {
       const headers = await this.getAuthHeaders();
-      const url = `${API_BASE}/users/search?q=${encodeURIComponent(searchTerm)}`;
+      const url = `${API_BASE}/conversations/users/search?q=${encodeURIComponent(searchTerm)}`;
       console.log('🔍 Searching users:', url);
-      
+
       const response = await fetch(url, {
         method: 'GET',
         headers,
@@ -252,8 +260,16 @@ class ConversationsService {
 
       const data = await response.json();
       console.log('👥 Raw user search data:', JSON.stringify(data, null, 2));
-      
-      return Array.isArray(data) ? data : [];
+
+      if (Array.isArray(data)) {
+        // Ensure all user IDs are converted from buffer objects to strings
+        return data.map((user) => ({
+          ...user,
+          _id: convertBufferToId(user._id),
+        }));
+      }
+
+      return [];
     } catch (error) {
       console.error('Search users error:', error);
       throw error;
@@ -264,7 +280,7 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       console.log('🗑️ Deleting conversation:', conversationId);
-      
+
       const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
         method: 'DELETE',
         headers,

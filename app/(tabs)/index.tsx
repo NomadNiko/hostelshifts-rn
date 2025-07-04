@@ -15,6 +15,9 @@ import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import ThemeToggle from '../../components/ThemeToggle';
+import WeekDayHeader from '../../components/WeekDayHeader';
+import DayScheduleCard from '../../components/DayScheduleCard';
+import { getWeekDatesFromStartDate, formatDate, getDayName } from '../../utils/dateUtils';
 
 export default function SchedulesScreen() {
   const { isDark } = useTheme();
@@ -30,6 +33,7 @@ export default function SchedulesScreen() {
     publishSchedule,
   } = useSchedules();
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedDayFilter, setSelectedDayFilter] = useState<string | null>(null);
 
   const colors = isDark ? COLORS.dark : COLORS.light;
 
@@ -37,7 +41,7 @@ export default function SchedulesScreen() {
   const getColorForIndex = (colorIndex: number) => {
     const colorMap = [
       '#ef4444', // red
-      '#f97316', // orange  
+      '#f97316', // orange
       '#eab308', // yellow
       '#22c55e', // green
       '#06b6d4', // cyan
@@ -71,7 +75,7 @@ export default function SchedulesScreen() {
             try {
               await publishSchedule(scheduleId);
               Alert.alert('Success', 'Schedule has been published successfully!');
-            } catch (error) {
+            } catch {
               Alert.alert('Error', 'Failed to publish schedule. Please try again.');
             }
           },
@@ -80,124 +84,51 @@ export default function SchedulesScreen() {
     );
   };
 
-  const formatDate = (dateString: string) => {
-    try {
-      console.log('🗓️ formatDate input:', dateString);
-      const date = new Date(dateString);
-      console.log('🗓️ Date object:', date);
-      console.log('🗓️ Date.getTime():', date.getTime());
-      if (isNaN(date.getTime())) {
-        console.warn('🗓️ Invalid date detected:', dateString);
-        return 'Invalid Date';
-      }
-      const formatted = date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-      });
-      console.log('🗓️ Formatted date:', formatted);
-      return formatted;
-    } catch (error) {
-      console.error('🗓️ Date formatting error:', error, 'for input:', dateString);
-      return 'Invalid Date';
-    }
-  };
-
-  const formatTime = (timeString: string) => {
-    try {
-      if (!timeString) return 'N/A';
-      // Handle both HH:MM and HH:MM:SS formats
-      const timeParts = timeString.split(':');
-      if (timeParts.length < 2) return timeString;
-      
-      const hours = parseInt(timeParts[0], 10);
-      const minutes = parseInt(timeParts[1], 10);
-      
-      if (isNaN(hours) || isNaN(minutes)) return timeString;
-      
-      const date = new Date();
-      date.setHours(hours, minutes, 0, 0);
-      
-      return date.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true,
-      });
-    } catch (error) {
-      return timeString || 'N/A';
-    }
-  };
-
   const getShiftsForDate = (date: string) => {
-    const shifts = scheduleShifts.filter(shift => {
-      // Backend returns full ISO date strings like "2025-06-30T00:00:00.000Z"
-      // We need to compare just the date part
+    const shifts = scheduleShifts.filter((shift) => {
       const shiftDate = shift.date ? shift.date.split('T')[0] : '';
       return shiftDate === date;
     });
 
-    // Sort by start time first, then by shift type name
     return shifts.sort((a, b) => {
-      // Primary sort: start time
       const timeA = a.shiftType?.startTime || '00:00';
       const timeB = b.shiftType?.startTime || '00:00';
-      
+
       if (timeA !== timeB) {
         return timeA.localeCompare(timeB);
       }
-      
-      // Secondary sort: shift type name
+
       const nameA = a.shiftType?.name || '';
       const nameB = b.shiftType?.name || '';
       return nameA.localeCompare(nameB);
     });
   };
 
+  // Get week dates using the proper utility function
   const getCurrentWeekDates = () => {
-    console.log('📅 getCurrentWeekDates - currentSchedule:', currentSchedule);
     if (!currentSchedule || !currentSchedule.startDate) {
-      console.log('📅 No current schedule or startDate');
       return [];
     }
-    
-    try {
-      console.log('📅 startDate value:', currentSchedule.startDate);
-      const start = new Date(currentSchedule.startDate);
-      console.log('📅 start date object:', start);
-      if (isNaN(start.getTime())) {
-        console.log('📅 Invalid start date');
-        return [];
-      }
-      
-      const dates = [];
-      
-      for (let i = 0; i < 7; i++) {
-        const date = new Date(start);
-        date.setDate(start.getDate() + i);
-        if (!isNaN(date.getTime())) {
-          const dateString = date.toISOString().split('T')[0];
-          dates.push(dateString);
-          console.log(`📅 Day ${i}: ${dateString}`);
-        }
-      }
-      
-      console.log('📅 Generated week dates:', dates);
-      return dates;
-    } catch (error) {
-      console.error('📅 Error generating week dates:', error);
-      return [];
+    return getWeekDatesFromStartDate(currentSchedule.startDate);
+  };
+
+  const toggleDayFilter = (targetDate: string) => {
+    if (selectedDayFilter === targetDate) {
+      // If already selected, clear the filter to show all days
+      setSelectedDayFilter(null);
+    } else {
+      // Set the filter to show only this day
+      setSelectedDayFilter(targetDate);
     }
   };
 
-  const getDayName = (dateString: string) => {
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Invalid';
-      return date.toLocaleDateString('en-US', { weekday: 'short' });
-    } catch (error) {
-      return 'Invalid';
-    }
-  };
+  const weekDates = getCurrentWeekDates();
+  const daysWithShifts = weekDates.filter((date) => getShiftsForDate(date).length > 0);
+
+  // Filter days based on selected filter
+  const filteredDaysWithShifts = selectedDayFilter
+    ? daysWithShifts.filter((date) => date === selectedDayFilter)
+    : daysWithShifts;
 
   if (error) {
     return (
@@ -212,7 +143,9 @@ export default function SchedulesScreen() {
         </SafeAreaView>
         <View className="flex-1 items-center justify-center p-6">
           <Ionicons name="alert-circle" size={48} color={colors.destructive} />
-          <Text className="mt-4 text-lg font-semibold text-center" style={{ color: colors.foreground }}>
+          <Text
+            className="mt-4 text-center text-lg font-semibold"
+            style={{ color: colors.foreground }}>
             {error}
           </Text>
           <TouchableOpacity
@@ -246,17 +179,14 @@ export default function SchedulesScreen() {
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {/* Schedule Selector */}
         {schedules.length > 0 && (
           <View className="px-6 pb-4">
             <Text className="mb-3 text-lg font-semibold" style={{ color: colors.foreground }}>
               Select Week
             </Text>
-            
+
             {/* Compact Schedule Toggles */}
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
               <View className="flex-row space-x-2">
@@ -264,19 +194,23 @@ export default function SchedulesScreen() {
                   <TouchableOpacity
                     key={schedule.id}
                     className={`rounded-md border px-3 py-1.5 ${
-                      currentSchedule?.id === schedule.id ? 'border-opacity-100' : 'border-opacity-30'
+                      currentSchedule?.id === schedule.id
+                        ? 'border-opacity-100'
+                        : 'border-opacity-30'
                     }`}
                     style={{
-                      borderColor: currentSchedule?.id === schedule.id ? colors.primary : colors.grey4,
-                      backgroundColor: currentSchedule?.id === schedule.id ? colors.primary + '15' : 'transparent',
+                      borderColor:
+                        currentSchedule?.id === schedule.id ? colors.primary : colors.grey4,
+                      backgroundColor:
+                        currentSchedule?.id === schedule.id ? colors.primary + '15' : 'transparent',
                     }}
                     onPress={() => setCurrentSchedule(schedule)}>
-                    <Text 
+                    <Text
                       className={`text-xs font-medium ${
                         currentSchedule?.id === schedule.id ? 'font-semibold' : ''
-                      }`} 
-                      style={{ 
-                        color: currentSchedule?.id === schedule.id ? colors.primary : colors.grey 
+                      }`}
+                      style={{
+                        color: currentSchedule?.id === schedule.id ? colors.primary : colors.grey,
                       }}>
                       {formatDate(schedule.startDate)} - {formatDate(schedule.endDate)}
                     </Text>
@@ -287,7 +221,7 @@ export default function SchedulesScreen() {
 
             {/* Schedule Info Panel */}
             {currentSchedule && (
-              <View 
+              <View
                 className="mt-3 rounded-lg border p-3"
                 style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
                 <View className="flex-row items-center justify-between">
@@ -299,7 +233,10 @@ export default function SchedulesScreen() {
                       <View
                         className="mr-2 h-2 w-2 rounded-full"
                         style={{
-                          backgroundColor: currentSchedule.status.toLowerCase() === 'published' ? colors.success : colors.warning,
+                          backgroundColor:
+                            currentSchedule.status.toLowerCase() === 'published'
+                              ? colors.success
+                              : colors.warning,
                         }}
                       />
                       <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
@@ -307,9 +244,12 @@ export default function SchedulesScreen() {
                       </Text>
                       {currentSchedule.createdBy && (
                         <>
-                          <Text className="mx-2 text-xs" style={{ color: colors.grey2 }}>•</Text>
+                          <Text className="mx-2 text-xs" style={{ color: colors.grey2 }}>
+                            •
+                          </Text>
                           <Text className="text-xs" style={{ color: colors.grey2 }}>
-                            Created by {currentSchedule.createdBy.firstName} {currentSchedule.createdBy.lastName}
+                            Created by {currentSchedule.createdBy.firstName}{' '}
+                            {currentSchedule.createdBy.lastName}
                           </Text>
                         </>
                       )}
@@ -331,77 +271,67 @@ export default function SchedulesScreen() {
 
         {/* Current Schedule Details */}
         {currentSchedule && (
-          <View className="px-6 pb-6">
-            <Text className="text-lg font-semibold mb-4" style={{ color: colors.foreground }}>
-              Week Schedule
-            </Text>
-
-            {/* Weekly View */}
-            <View className="space-y-3">
-              {getCurrentWeekDates().map((date) => {
-                const dayShifts = getShiftsForDate(date);
-                return (
-                  <View
-                    key={date}
-                    className="rounded-lg border p-4"
-                    style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
-                    <View className="flex-row items-center justify-between mb-2">
-                      <Text className="font-semibold" style={{ color: colors.foreground }}>
-                        {getDayName(date)} {formatDate(date)}
-                      </Text>
-                      <Text className="text-sm" style={{ color: colors.grey2 }}>
-                        {dayShifts.length} shift{dayShifts.length !== 1 ? 's' : ''}
-                      </Text>
-                    </View>
-
-                    {dayShifts.length > 0 ? (
-                      <View className="space-y-2">
-                        {dayShifts.map((shift) => (
-                          <View
-                            key={shift.id}
-                            className="flex-row items-center justify-between rounded-lg p-3"
-                            style={{ backgroundColor: colors.background }}>
-                            <View className="flex-1">
-                              <Text className="font-medium" style={{ color: colors.foreground }}>
-                                {shift.shiftType?.name || 'Shift'}
-                              </Text>
-                              <Text className="text-sm" style={{ color: colors.grey2 }}>
-                                {formatTime(shift.shiftType?.startTime)} - {formatTime(shift.shiftType?.endTime)}
-                              </Text>
-                              {shift.user && (
-                                <Text className="text-sm" style={{ color: colors.grey }}>
-                                  Assigned: {shift.user.firstName} {shift.user.lastName}
-                                </Text>
-                              )}
-                            </View>
-                            {shift.shiftType?.colorIndex !== undefined && (
-                              <View
-                                className="h-4 w-4 rounded-full"
-                                style={{ 
-                                  backgroundColor: getColorForIndex(shift.shiftType.colorIndex)
-                                }}
-                              />
-                            )}
-                          </View>
-                        ))}
-                      </View>
-                    ) : (
-                      <Text className="text-center text-sm" style={{ color: colors.grey2 }}>
-                        No shifts scheduled
-                      </Text>
-                    )}
-                  </View>
-                );
-              })}
+          <>
+            {/* Day Navigation Header */}
+            <View
+              className="border-b px-6 py-4"
+              style={{
+                backgroundColor: colors.background,
+                borderBottomColor: colors.grey4,
+                shadowColor: isDark ? '#000' : '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: isDark ? 0.3 : 0.1,
+                shadowRadius: 4,
+                elevation: 4,
+              }}>
+              <View className="mb-3">
+                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>
+                  {selectedDayFilter
+                    ? `${getDayName(selectedDayFilter)} Schedule`
+                    : 'Week Schedule'}
+                </Text>
+                {selectedDayFilter && (
+                  <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
+                    Tap the green day button again to show all days
+                  </Text>
+                )}
+              </View>
+              <WeekDayHeader
+                weekDates={weekDates}
+                getShiftsForDate={getShiftsForDate}
+                selectedDayFilter={selectedDayFilter}
+                onDayToggle={toggleDayFilter}
+                colors={colors}
+              />
             </View>
-          </View>
+
+            <View className="px-6 pb-6 pt-4">
+              {/* Weekly View */}
+              <View className="space-y-3">
+                {filteredDaysWithShifts.map((date) => {
+                  const dayShifts = getShiftsForDate(date);
+                  return (
+                    <DayScheduleCard
+                      key={date}
+                      date={date}
+                      shifts={dayShifts}
+                      colors={colors}
+                      getColorForIndex={getColorForIndex}
+                    />
+                  );
+                })}
+              </View>
+            </View>
+          </>
         )}
 
         {/* Empty State */}
         {!isLoading && schedules.length === 0 && (
           <View className="flex-1 items-center justify-center p-6">
             <Ionicons name="calendar-outline" size={64} color={colors.grey2} />
-            <Text className="mt-4 text-lg font-semibold text-center" style={{ color: colors.foreground }}>
+            <Text
+              className="mt-4 text-center text-lg font-semibold"
+              style={{ color: colors.foreground }}>
               No Schedules Found
             </Text>
             <Text className="mt-2 text-center" style={{ color: colors.grey2 }}>

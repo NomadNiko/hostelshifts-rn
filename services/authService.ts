@@ -16,6 +16,7 @@ interface User {
   username?: string;
   firstName?: string;
   lastName?: string;
+  avatar?: number | null;
   photo?: {
     id: string;
     path: string;
@@ -46,7 +47,7 @@ class AuthService {
   async login(email: string, password: string): Promise<LoginResponse> {
     try {
       console.log('Attempting login to:', `${API_BASE}${API_ENDPOINTS.auth.login}`);
-      
+
       const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.login}`, {
         method: 'POST',
         headers: {
@@ -69,12 +70,14 @@ class AuthService {
       return data;
     } catch (error: any) {
       console.error('Login error:', error);
-      
+
       // Handle network errors specifically
       if (error.message === 'Network request failed') {
-        throw new Error('Cannot connect to server. Please check your internet connection and ensure the backend is running.');
+        throw new Error(
+          'Cannot connect to server. Please check your internet connection and ensure the backend is running.'
+        );
       }
-      
+
       throw error;
     }
   }
@@ -208,6 +211,40 @@ class AuthService {
     } catch (error) {
       console.error('Session check error:', error);
       return false;
+    }
+  }
+
+  async updateAvatar(avatarNumber: number): Promise<User | null> {
+    try {
+      if (!this.token) {
+        throw new Error('No authentication token');
+      }
+
+      const response = await fetch(`${API_BASE}${API_ENDPOINTS.auth.me}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ avatar: avatarNumber }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // Try to refresh token
+          const refreshed = await this.refreshAccessToken();
+          if (refreshed) {
+            // Retry with new token
+            return this.updateAvatar(avatarNumber);
+          }
+        }
+        throw new Error(`Failed to update avatar: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Update avatar error:', error);
+      throw error;
     }
   }
 

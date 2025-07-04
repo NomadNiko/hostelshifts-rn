@@ -17,7 +17,6 @@ export const API_ENDPOINTS = {
     forgotPassword: '/auth/forgot/password',
     resetPassword: '/auth/reset/password',
     confirmEmail: '/auth/email/confirm',
-    invite: '/auth/invite',
   },
   schedules: {
     list: '/schedules',

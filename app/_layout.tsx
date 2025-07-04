@@ -19,7 +19,7 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <View 
+      <View
         className="flex-1 items-center justify-center"
         style={{ backgroundColor: COLORS.dark.background }}>
         <ActivityIndicator size="large" color={COLORS.dark.primary} />
