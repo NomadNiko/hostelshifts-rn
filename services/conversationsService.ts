@@ -61,26 +61,57 @@ export interface SendMessageDto {
 
 // Helper function to convert buffer objects to string IDs
 const convertBufferToId = (obj: any): string => {
-  if (obj && obj.buffer && typeof obj.buffer === 'object') {
-    const buffer = obj.buffer;
-    const bytes = Object.keys(buffer).map((key) => buffer[key]);
-    return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+  if (!obj) {
+    return '';
   }
-  return obj;
+  
+  if (obj && obj.buffer && typeof obj.buffer === 'object') {
+    try {
+      const buffer = obj.buffer;
+      const bytes = Object.keys(buffer).map((key) => buffer[key]);
+      return bytes.map((b) => b.toString(16).padStart(2, '0')).join('');
+    } catch (error) {
+      console.warn('⚠️ Error converting buffer to ID:', error);
+      return String(obj);
+    }
+  }
+  
+  // If it's already a string, return it
+  if (typeof obj === 'string') {
+    return obj;
+  }
+  
+  // Try to convert to string
+  try {
+    return String(obj);
+  } catch (error) {
+    console.warn('⚠️ Error converting object to string:', error);
+    return '';
+  }
 };
 
 // Helper function to clean conversation data
 const cleanConversationData = (conversation: any): Conversation => {
+  if (!conversation) {
+    throw new Error('Conversation data is null or undefined');
+  }
+
   return {
     ...conversation,
     _id: convertBufferToId(conversation._id),
     // Map server's 'name' field to client's 'title' field
     title: conversation.name,
     participants:
-      conversation.participants?.map((p: any) => ({
-        ...p,
-        _id: convertBufferToId(p._id),
-      })) || [],
+      conversation.participants?.map((p: any) => {
+        if (!p || !p._id) {
+          console.warn('⚠️ Found participant without _id, skipping');
+          return null;
+        }
+        return {
+          ...p,
+          _id: convertBufferToId(p._id),
+        };
+      }).filter(Boolean) || [],
     lastMessage: conversation.lastMessage ? cleanMessageData(conversation.lastMessage) : undefined,
   };
 };
@@ -332,6 +363,8 @@ class ConversationsService {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Service: Add participant error response:', errorText);
         throw new Error(`Failed to add participant: ${response.status}`);
       }
 
@@ -354,6 +387,8 @@ class ConversationsService {
       });
 
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Service: Remove participant error response:', errorText);
         throw new Error(`Failed to remove participant: ${response.status}`);
       }
 

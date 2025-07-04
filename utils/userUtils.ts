@@ -106,28 +106,37 @@ export const getConversationSubtitle = (
 };
 
 export const shouldShowMessageSender = (
-  currentMessage: { senderId: { _id: string } },
-  previousMessage: { senderId: { _id: string } } | null,
+  currentMessage: { senderId?: { _id: string } },
+  previousMessage: { senderId?: { _id: string } } | null,
   isOwnMessage: boolean
 ): boolean => {
+  // System messages don't show senders
+  if (!currentMessage.senderId) return false;
+  
   return (
     !isOwnMessage &&
-    (!previousMessage || previousMessage.senderId._id !== currentMessage.senderId._id)
+    (!previousMessage || !previousMessage.senderId || previousMessage.senderId._id !== currentMessage.senderId._id)
   );
 };
 
 export const isLastMessageInGroup = (
-  currentMessage: { senderId: { _id: string } },
-  nextMessage: { senderId: { _id: string } } | null
+  currentMessage: { senderId?: { _id: string } },
+  nextMessage: { senderId?: { _id: string } } | null
 ): boolean => {
-  return !nextMessage || nextMessage.senderId._id !== currentMessage.senderId._id;
+  // System messages are always their own group
+  if (!currentMessage.senderId) return true;
+  
+  return !nextMessage || !nextMessage.senderId || nextMessage.senderId._id !== currentMessage.senderId._id;
 };
 
 export const isFirstMessageInGroup = (
-  currentMessage: { senderId: { _id: string } },
-  previousMessage: { senderId: { _id: string } } | null
+  currentMessage: { senderId?: { _id: string } },
+  previousMessage: { senderId?: { _id: string } } | null
 ): boolean => {
-  return !previousMessage || previousMessage.senderId._id !== currentMessage.senderId._id;
+  // System messages are always their own group
+  if (!currentMessage.senderId) return true;
+  
+  return !previousMessage || !previousMessage.senderId || previousMessage.senderId._id !== currentMessage.senderId._id;
 };
 
 export const getConversationPrimaryParticipant = (
