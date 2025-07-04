@@ -7,6 +7,7 @@
  */
 import React from 'react';
 import { View, Text } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { formatDate, getDayName, formatShiftTime } from '../utils/dateUtils';
 import type { ScheduleShift } from '../services/schedulesService';
 import AvatarDisplay from './AvatarDisplay';
@@ -48,48 +49,57 @@ export default function DayScheduleCard({
             : colors.background;
           
           return (
-            <View
+            <LinearGradient
               key={shift.id}
-              className="flex-row items-center justify-between rounded-lg p-3 mb-1"
-              style={{ 
-                backgroundColor: shiftColor + '20', // 20% opacity tint
+              colors={[
+                shiftColor + '30', // 30% opacity for gradient start
+                shiftColor + '10', // 10% opacity for gradient end
+              ]}
+              style={{
+                borderRadius: 8,
+                marginBottom: 4,
                 borderWidth: 1,
                 borderColor: shiftColor + '40', // 40% opacity border
-              }}>
-              {/* Left column - Shift details */}
-              <View className="flex-1 pr-3">
-                <Text className="text-sm font-medium" style={{ color: colors.grey }}>
-                  {shift.shiftType?.name || 'Shift'}
-                </Text>
-                <Text className="text-lg font-semibold" style={{ color: colors.grey2 }}>
-                  {formatShiftTime(shift.shiftType?.startTime || '')} -{' '}
-                  {formatShiftTime(shift.shiftType?.endTime || '')}
-                </Text>
-              </View>
+              }}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}>
               
-              {/* Right column - User */}
-              <View className="items-end">
-                {shift.user ? (
-                  <>
-                    <AvatarDisplay
-                      user={shift.user}
-                      avatarNumber={shift.user.avatar}
-                      size="medium"
-                    />
-                    <Text 
-                      className="mt-1 text-right text-lg font-bold" 
-                      style={{ color: colors.foreground }}
-                      numberOfLines={1}>
-                      {shift.user.firstName} {shift.user.lastName}
-                    </Text>
-                  </>
-                ) : (
-                  <Text className="text-sm font-medium text-right" style={{ color: colors.destructive }}>
-                    Unassigned
+              <View className="flex-row items-center justify-between p-3">
+                {/* Left column - Shift details */}
+                <View className="flex-1 pr-3">
+                  <Text className="text-sm font-medium" style={{ color: colors.foreground }}>
+                    {shift.shiftType?.name || 'Shift'}
                   </Text>
-                )}
+                  <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>
+                    {formatShiftTime(shift.shiftType?.startTime || '')} -{' '}
+                    {formatShiftTime(shift.shiftType?.endTime || '')}
+                  </Text>
+                </View>
+                
+                {/* Right column - User */}
+                <View className="items-end">
+                  {shift.user ? (
+                    <>
+                      <AvatarDisplay
+                        user={shift.user}
+                        avatarNumber={shift.user.avatar}
+                        size="medium"
+                      />
+                      <Text 
+                        className="mt-1 text-right text-lg font-bold" 
+                        style={{ color: colors.foreground }}
+                        numberOfLines={1}>
+                        {shift.user.firstName} {shift.user.lastName}
+                      </Text>
+                    </>
+                  ) : (
+                    <Text className="text-sm font-medium text-right" style={{ color: colors.destructive }}>
+                      Unassigned
+                    </Text>
+                  )}
+                </View>
               </View>
-            </View>
+            </LinearGradient>
           );
         })}
       </View>

@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  ActivityIndicator,
   Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,6 +14,7 @@ import { useConversations } from '../contexts/ConversationsContext';
 import { COLORS } from '../theme/colors';
 import { Ionicons } from '@expo/vector-icons';
 import AvatarDisplay from './AvatarDisplay';
+import LoadingSpinner from './LoadingSpinner';
 
 interface User {
   _id: string;
@@ -221,7 +221,7 @@ export default function NewConversationModal({
                 onChangeText={handleSearch}
                 autoFocus
               />
-              {isSearching && <ActivityIndicator size="small" color={colors.primary} />}
+              {isSearching && <LoadingSpinner size={16} color={colors.primary} />}
             </View>
           </View>
 
@@ -280,7 +280,7 @@ export default function NewConversationModal({
                 onPress={handleCreateConversation}
                 disabled={isCreating}>
                 {isCreating ? (
-                  <ActivityIndicator size="small" color="white" />
+                  <LoadingSpinner size={20} color="white" />
                 ) : (
                   <Text className="text-center font-semibold text-white">
                     Create Conversation with {selectedUsers.length} user

@@ -34,9 +34,10 @@ export default function WeekDayHeader({
       <View
         style={{
           flexDirection: 'row',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           alignItems: 'center',
           width: '100%',
+          gap: 8,
         }}>
         {weekDates.map((date, index) => {
           const hasShifts = getShiftsForDate(date).length > 0;
@@ -51,12 +52,12 @@ export default function WeekDayHeader({
               style={{
                 width: 52,
                 height: 52,
-                backgroundColor: isSelected
-                  ? colors.success
-                  : hasShifts
-                    ? colors.primary
-                    : colors.grey5,
-                opacity: hasShifts ? 1 : 0.5,
+                backgroundColor: hasShifts ? colors.primary : colors.grey5,
+                opacity: selectedDayFilter === null 
+                  ? (hasShifts ? 1 : 0.5)
+                  : isSelected 
+                    ? 1 
+                    : 0.3,
                 borderWidth: isSelected ? 2 : 0,
                 borderColor: colors.background,
               }}

@@ -5,12 +5,12 @@ import {
   TouchableOpacity,
   Platform,
   Alert,
-  ActivityIndicator,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MessageInputProps } from '../../types/messaging';
 import { createMessagingStyles, DIMENSIONS } from './styles';
 import { COLORS } from '../../theme/colors';
+import LoadingSpinner from '../LoadingSpinner';
 
 const MessageInput: React.FC<MessageInputProps> = ({
   value,
@@ -102,7 +102,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
           disabled={!isEnabled}
           activeOpacity={0.8}>
           {isSending ? (
-            <ActivityIndicator size="small" color="white" />
+            <LoadingSpinner size={16} color="white" />
           ) : (
             <Ionicons name="send" size={22} color={isEnabled ? 'white' : colors.grey2} />
           )}

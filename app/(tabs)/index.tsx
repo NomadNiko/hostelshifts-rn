@@ -5,8 +5,8 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -17,7 +17,16 @@ import { Ionicons } from '@expo/vector-icons';
 import ThemeToggle from '../../components/ThemeToggle';
 import WeekDayHeader from '../../components/WeekDayHeader';
 import DayScheduleCard from '../../components/DayScheduleCard';
-import { getWeekDatesFromStartDate, formatDate, getDayName } from '../../utils/dateUtils';
+import LoadingSpinner from '../../components/LoadingSpinner';
+import { 
+  getWeekDatesFromStartDate, 
+  formatDate, 
+  getDayName, 
+  getCurrentWeekStartDate,
+  getWeekDatesFromMonday,
+  addWeeks,
+  formatWeekRange
+} from '../../utils/dateUtils';
 
 export default function SchedulesScreen() {
   const { isDark } = useTheme();
@@ -34,6 +43,7 @@ export default function SchedulesScreen() {
   } = useSchedules();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedDayFilter, setSelectedDayFilter] = useState<string | null>(null);
+  const [selectedWeekStart, setSelectedWeekStart] = useState<string>(getCurrentWeekStartDate());
 
   const colors = isDark ? COLORS.dark : COLORS.light;
 
@@ -104,12 +114,37 @@ export default function SchedulesScreen() {
     });
   };
 
-  // Get week dates using the proper utility function
-  const getCurrentWeekDates = () => {
-    if (!currentSchedule || !currentSchedule.startDate) {
-      return [];
+  // Navigation functions
+  const goToPreviousWeek = () => {
+    setSelectedWeekStart(prev => addWeeks(prev, -1));
+    setSelectedDayFilter(null); // Clear day filter when changing weeks
+  };
+
+  const goToNextWeek = () => {
+    setSelectedWeekStart(prev => addWeeks(prev, 1));
+    setSelectedDayFilter(null); // Clear day filter when changing weeks
+  };
+
+  // Find schedule for the selected week
+  const getScheduleForWeek = (weekStartDate: string) => {
+    return schedules.find(schedule => {
+      const scheduleStart = schedule.startDate.split('T')[0];
+      return scheduleStart === weekStartDate;
+    });
+  };
+
+  const weekSchedule = getScheduleForWeek(selectedWeekStart);
+  
+  // Load shifts when week schedule changes
+  React.useEffect(() => {
+    if (weekSchedule && weekSchedule.id !== currentSchedule?.id) {
+      setCurrentSchedule(weekSchedule);
     }
-    return getWeekDatesFromStartDate(currentSchedule.startDate);
+  }, [weekSchedule, currentSchedule, setCurrentSchedule]);
+  
+  // Get week dates for the selected week
+  const getCurrentWeekDates = () => {
+    return getWeekDatesFromMonday(selectedWeekStart);
   };
 
   const toggleDayFilter = (targetDate: string) => {
@@ -123,7 +158,32 @@ export default function SchedulesScreen() {
   };
 
   const weekDates = getCurrentWeekDates();
-  const daysWithShifts = weekDates.filter((date) => getShiftsForDate(date).length > 0);
+  
+  // Get shifts based on the selected week's schedule
+  const getShiftsForSelectedWeek = (date: string) => {
+    if (!weekSchedule) return [];
+    
+    // Use the scheduleShifts from context (they should be loaded for the current weekSchedule)
+    const shifts = scheduleShifts.filter((shift) => {
+      const shiftDate = shift.date ? shift.date.split('T')[0] : '';
+      return shiftDate === date;
+    });
+
+    return shifts.sort((a, b) => {
+      const timeA = a.shiftType?.startTime || '00:00';
+      const timeB = b.shiftType?.startTime || '00:00';
+
+      if (timeA !== timeB) {
+        return timeA.localeCompare(timeB);
+      }
+
+      const nameA = a.shiftType?.name || '';
+      const nameB = b.shiftType?.name || '';
+      return nameA.localeCompare(nameB);
+    });
+  };
+
+  const daysWithShifts = weekDates.filter((date) => getShiftsForSelectedWeek(date).length > 0);
 
   // Filter days based on selected filter
   const filteredDaysWithShifts = selectedDayFilter
@@ -133,12 +193,11 @@ export default function SchedulesScreen() {
   if (error) {
     return (
       <View className="flex-1" style={{ backgroundColor: colors.background }}>
-        <SafeAreaView>
-          <View className="flex-row items-center justify-between px-6 py-4">
+        <SafeAreaView edges={['top']}>
+          <View className="flex-row items-center justify-between px-6 pb-4">
             <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
               Schedules
             </Text>
-            <ThemeToggle />
           </View>
         </SafeAreaView>
         <View className="flex-1 items-center justify-center p-6">
@@ -162,8 +221,8 @@ export default function SchedulesScreen() {
   return (
     <View className="flex-1" style={{ backgroundColor: colors.background }}>
       {/* Header */}
-      <SafeAreaView>
-        <View className="flex-row items-center justify-between px-6 py-4">
+      <SafeAreaView edges={['top']}>
+        <View className="flex-row items-center justify-between px-6 pb-4">
           <View>
             <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
               Schedules
@@ -172,7 +231,6 @@ export default function SchedulesScreen() {
               Welcome back, {user?.firstName || user?.email}!
             </Text>
           </View>
-          <ThemeToggle />
         </View>
       </SafeAreaView>
 
@@ -180,97 +238,69 @@ export default function SchedulesScreen() {
         className="flex-1"
         contentContainerStyle={{ paddingBottom: 100 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {/* Schedule Selector */}
-        {schedules.length > 0 && (
-          <View className="px-6 pb-4">
-            <Text className="mb-3 text-lg font-semibold" style={{ color: colors.foreground }}>
-              Select Week
-            </Text>
+        {/* Week Selector */}
+        <View className="px-6 pb-4">
+          <Text className="mb-3 text-lg font-semibold" style={{ color: colors.foreground }}>
+            Week View
+          </Text>
 
-            {/* Compact Schedule Toggles */}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row space-x-2">
-                {schedules.map((schedule) => (
-                  <TouchableOpacity
-                    key={schedule.id}
-                    className={`rounded-md border px-3 py-1.5 ${
-                      currentSchedule?.id === schedule.id
-                        ? 'border-opacity-100'
-                        : 'border-opacity-30'
-                    }`}
-                    style={{
-                      borderColor:
-                        currentSchedule?.id === schedule.id ? colors.primary : colors.grey4,
-                      backgroundColor:
-                        currentSchedule?.id === schedule.id ? colors.primary + '15' : 'transparent',
-                    }}
-                    onPress={() => setCurrentSchedule(schedule)}>
-                    <Text
-                      className={`text-xs font-medium ${
-                        currentSchedule?.id === schedule.id ? 'font-semibold' : ''
-                      }`}
-                      style={{
-                        color: currentSchedule?.id === schedule.id ? colors.primary : colors.grey,
-                      }}>
-                      {formatDate(schedule.startDate)} - {formatDate(schedule.endDate)}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
-
-            {/* Schedule Info Panel */}
-            {currentSchedule && (
-              <View
-                className="mt-3 rounded-lg border p-3"
+          {/* Week Navigation */}
+          <View className="flex-row items-center justify-between rounded-lg border p-3" 
                 style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
-                <View className="flex-row items-center justify-between">
-                  <View className="flex-1">
-                    <Text className="font-semibold" style={{ color: colors.foreground }}>
-                      {currentSchedule.name}
-                    </Text>
-                    <View className="mt-1 flex-row items-center">
-                      <View
-                        className="mr-2 h-2 w-2 rounded-full"
-                        style={{
-                          backgroundColor:
-                            currentSchedule.status.toLowerCase() === 'published'
-                              ? colors.success
-                              : colors.warning,
-                        }}
-                      />
-                      <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
-                        {currentSchedule.status.toUpperCase()}
-                      </Text>
-                      {currentSchedule.createdBy && (
-                        <>
-                          <Text className="mx-2 text-xs" style={{ color: colors.grey2 }}>
-                            •
-                          </Text>
-                          <Text className="text-xs" style={{ color: colors.grey2 }}>
-                            Created by {currentSchedule.createdBy.firstName}{' '}
-                            {currentSchedule.createdBy.lastName}
-                          </Text>
-                        </>
-                      )}
-                    </View>
-                  </View>
-                  {currentSchedule.status.toLowerCase() === 'draft' && (
-                    <TouchableOpacity
-                      className="ml-3 rounded-lg px-3 py-1.5"
-                      style={{ backgroundColor: colors.primary }}
-                      onPress={() => handlePublishSchedule(currentSchedule.id)}>
-                      <Text className="text-xs font-semibold text-white">Publish</Text>
-                    </TouchableOpacity>
-                  )}
+            <TouchableOpacity
+              className="rounded p-2"
+              style={{ backgroundColor: colors.background }}
+              onPress={goToPreviousWeek}>
+              <Ionicons name="chevron-back" size={24} color={colors.foreground} />
+            </TouchableOpacity>
+            
+            <View className="flex-1 items-center">
+              <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
+                {formatWeekRange(selectedWeekStart)}
+              </Text>
+              {weekSchedule ? (
+                <View className="mt-1 flex-row items-center">
+                  <View
+                    className="mr-2 h-2 w-2 rounded-full"
+                    style={{
+                      backgroundColor:
+                        weekSchedule.status.toLowerCase() === 'published'
+                          ? colors.success
+                          : colors.warning,
+                    }}
+                  />
+                  <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
+                    {weekSchedule.status.toUpperCase()} • {weekSchedule.name}
+                  </Text>
                 </View>
-              </View>
-            )}
+              ) : (
+                <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
+                  No schedule posted for this week
+                </Text>
+              )}
+            </View>
+            
+            <TouchableOpacity
+              className="rounded p-2"
+              style={{ backgroundColor: colors.background }}
+              onPress={goToNextWeek}>
+              <Ionicons name="chevron-forward" size={24} color={colors.foreground} />
+            </TouchableOpacity>
           </View>
-        )}
 
-        {/* Current Schedule Details */}
-        {currentSchedule && (
+          {/* Publish Button */}
+          {weekSchedule && weekSchedule.status.toLowerCase() === 'draft' && (
+            <TouchableOpacity
+              className="mt-3 rounded-lg py-3"
+              style={{ backgroundColor: colors.primary }}
+              onPress={() => handlePublishSchedule(weekSchedule.id)}>
+              <Text className="text-center font-semibold text-white">Publish Schedule</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+
+        {/* Schedule Content */}
+        {weekSchedule ? (
           <>
             {/* Day Navigation Header */}
             <View
@@ -298,7 +328,7 @@ export default function SchedulesScreen() {
               </View>
               <WeekDayHeader
                 weekDates={weekDates}
-                getShiftsForDate={getShiftsForDate}
+                getShiftsForDate={getShiftsForSelectedWeek}
                 selectedDayFilter={selectedDayFilter}
                 onDayToggle={toggleDayFilter}
                 colors={colors}
@@ -307,23 +337,37 @@ export default function SchedulesScreen() {
 
             <View className="px-6 pb-6 pt-4">
               {/* Weekly View */}
-              <View className="space-y-3">
-                {filteredDaysWithShifts.map((date) => {
-                  const dayShifts = getShiftsForDate(date);
-                  return (
-                    <DayScheduleCard
-                      key={date}
-                      date={date}
-                      shifts={dayShifts}
-                      colors={colors}
-                      getColorForIndex={getColorForIndex}
-                    />
-                  );
-                })}
-              </View>
+              {filteredDaysWithShifts.length > 0 ? (
+                <View className="space-y-3">
+                  {filteredDaysWithShifts.map((date) => {
+                    const dayShifts = getShiftsForSelectedWeek(date);
+                    return (
+                      <DayScheduleCard
+                        key={date}
+                        date={date}
+                        shifts={dayShifts}
+                        colors={colors}
+                        getColorForIndex={getColorForIndex}
+                      />
+                    );
+                  })}
+                </View>
+              ) : (
+                <View className="items-center justify-center p-6" style={{ marginTop: 50 }}>
+                  <ActivityIndicator size="large" color={colors.primary} />
+                  <Text
+                    className="mt-4 text-center text-lg font-semibold"
+                    style={{ color: colors.foreground }}>
+                    Schedules Loading...
+                  </Text>
+                  <Text className="mt-2 text-center" style={{ color: colors.grey2 }}>
+                    Please wait while we load the schedule data.
+                  </Text>
+                </View>
+              )}
             </View>
           </>
-        )}
+        ) : null}
 
         {/* Empty State */}
         {!isLoading && schedules.length === 0 && (
@@ -343,10 +387,7 @@ export default function SchedulesScreen() {
         {/* Loading State */}
         {isLoading && schedules.length === 0 && (
           <View className="flex-1 items-center justify-center p-6">
-            <ActivityIndicator size="large" color={colors.primary} />
-            <Text className="mt-4 text-center" style={{ color: colors.grey2 }}>
-              Loading schedules...
-            </Text>
+            <LoadingSpinner size={48} color={colors.primary} />
           </View>
         )}
       </ScrollView>

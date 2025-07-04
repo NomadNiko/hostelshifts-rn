@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { ConversationCardProps } from '../../types/messaging';
 import { COLORS } from '../../theme/colors';
 import { formatTime } from '../../utils/dateUtils';
@@ -31,17 +32,25 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
 
   return (
     <TouchableOpacity
-      className="mb-3 rounded px-5 py-5"
-      style={{
-        backgroundColor: colors.card,
-        shadowColor: isDark ? '#000' : '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: isDark ? 0.3 : 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-      }}
+      className="mb-3 rounded"
       onPress={() => onPress(conversation)}
       activeOpacity={0.7}>
+      <LinearGradient
+        colors={['#1e3a8a', '#0891b2']}
+        style={{
+          borderRadius: 16,
+          paddingHorizontal: 20,
+          paddingVertical: 20,
+          borderWidth: 3,
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.15,
+          shadowRadius: 4,
+          elevation: 3,
+        }}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}>
       <View className="flex-row items-center">
         {/* Avatar */}
         <View className="relative mr-4">
@@ -68,23 +77,24 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           <View className="mb-3 flex-row items-start justify-between">
             <Text
               className="flex-1 text-2xl font-bold"
-              style={{ color: colors.foreground }}
+              style={{ color: 'white' }}
               numberOfLines={2}>
               {displayName}
             </Text>
-            <Text className="ml-3 mt-1 text-xs font-medium" style={{ color: colors.grey2 }}>
+            <Text className="ml-3 mt-1 text-xs font-medium" style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
               {timeText}
             </Text>
           </View>
 
           <Text
             className="text-sm"
-            style={{ color: colors.grey }}
+            style={{ color: 'rgba(255, 255, 255, 0.9)' }}
             numberOfLines={2}>
             {displayPreview}
           </Text>
         </View>
       </View>
+      </LinearGradient>
     </TouchableOpacity>
   );
 };

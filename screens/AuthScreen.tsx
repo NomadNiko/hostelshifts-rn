@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,21 +7,25 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
   Alert,
   Modal,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../theme/colors';
 import { useAuth } from '../contexts/AuthContext';
 import authService from '../services/authService';
 import { Ionicons } from '@expo/vector-icons';
+import LoadingSpinner from '../components/LoadingSpinner';
+import HostelShiftsLogo from '../components/HostelShiftsLogo';
+import { TEXT_STYLES } from '../theme/fonts';
 
 const AuthScreen: React.FC = () => {
   const { checkSession } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
-  const [email, setEmail] = useState('aloha@ixplor.app'); // Default test email
-  const [password, setPassword] = useState('password'); // Default test password
+  const [email, setEmail] = useState('aloha@ixplor.app');
+  const [password, setPassword] = useState('password');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -29,9 +33,28 @@ const AuthScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  
+  // Animation values
+  const slideAnim = new Animated.Value(0);
+  const opacityAnim = new Animated.Value(0);
 
-  // Always use dark theme colors for auth screen
   const colors = COLORS.dark;
+
+  // Start animation on component mount
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const validateEmail = (email: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -42,7 +65,6 @@ const AuthScreen: React.FC = () => {
   };
 
   const handleAuth = async () => {
-    // Basic validation
     if (!email.trim() || !password.trim()) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
@@ -72,9 +94,7 @@ const AuthScreen: React.FC = () => {
     setIsLoading(true);
 
     try {
-      console.log('AuthScreen: Starting auth process, isSignUp:', isSignUp);
       if (isSignUp) {
-        console.log('AuthScreen: Calling register');
         await authService.register(email.trim(), password, firstName.trim(), lastName.trim());
         Alert.alert(
           'Account Created!',
@@ -92,20 +112,12 @@ const AuthScreen: React.FC = () => {
           ]
         );
       } else {
-        console.log('AuthScreen: Calling login');
         const response = await authService.login(email.trim(), password);
-        console.log('AuthScreen: Login response:', response);
-
         if (response.token) {
-          console.log('AuthScreen: Login successful, checking session');
           await checkSession();
-          console.log('AuthScreen: Session check completed');
         }
       }
     } catch (error: any) {
-      console.error('Auth error:', error);
-
-      // Provide more specific error messages
       let errorMessage = 'Authentication failed';
       if (error.message) {
         if (error.message.includes('email')) {
@@ -120,7 +132,6 @@ const AuthScreen: React.FC = () => {
           errorMessage = error.message;
         }
       }
-
       Alert.alert('Authentication Error', errorMessage);
     } finally {
       setIsLoading(false);
@@ -143,7 +154,6 @@ const AuthScreen: React.FC = () => {
 
     setIsLoading(true);
     try {
-      // Add forgot password API call here when needed
       Alert.alert(
         'Password Reset',
         'If an account with this email exists, you will receive password reset instructions.',
@@ -158,59 +168,118 @@ const AuthScreen: React.FC = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1" style={{ backgroundColor: colors.background }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        className="flex-1">
+        style={{ flex: 1 }}>
         <ScrollView
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-          className="flex-1">
-          <View className="flex-1 items-center justify-center px-6">
+          contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+          keyboardShouldPersistTaps="handled">
+          
+          {/* Main Container */}
+          <View
+            style={{
+              maxWidth: 400,
+              width: '100%',
+              alignSelf: 'center',
+            }}>
+            
             {/* Header */}
-            <View className="mb-12 items-center">
-              <Text className="text-center text-4xl font-bold" style={{ color: colors.foreground }}>
-                {isSignUp ? 'Create Account' : 'HostelShifts'}
+            <View style={{ marginBottom: 32, alignItems: 'center' }}>
+              <Animated.View 
+                style={{ 
+                  marginBottom: 48,
+                  opacity: opacityAnim,
+                  transform: [
+                    {
+                      scale: slideAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 1],
+                      }),
+                    },
+                    {
+                      translateY: slideAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [50, 0],
+                      }),
+                    },
+                  ],
+                }}>
+                <HostelShiftsLogo width={280} height={93} />
+              </Animated.View>
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '600',
+                  color: colors.foreground,
+                  textAlign: 'center',
+                  marginBottom: 8,
+                  ...TEXT_STYLES.semibold,
+                }}>
+                {isSignUp ? 'Create Account' : 'Login to your account'}
               </Text>
-              <Text className="mt-3 text-center text-lg" style={{ color: colors.grey }}>
-                {isSignUp ? 'Sign up to manage your shifts' : 'Sign in to view your schedule'}
+              <Text
+                style={{
+                  fontSize: 14,
+                  color: colors.grey2,
+                  textAlign: 'center',
+                  lineHeight: 20,
+                  ...TEXT_STYLES.regular,
+                }}>
+                {isSignUp 
+                  ? 'Sign up to manage your shifts' 
+                  : ''}
               </Text>
-              {!isSignUp && (
-                <Text className="mt-2 text-center text-sm" style={{ color: colors.grey2 }}>
-                  Test: aloha@ixplor.app / password
-                </Text>
-              )}
             </View>
 
-            {/* Form Container */}
-            <View className="w-full max-w-sm space-y-4">
-              {/* Name fields for signup */}
+            {/* Form */}
+            <View style={{ gap: 20 }}>
+              
+              {/* Name Fields for Sign Up */}
               {isSignUp && (
-                <View className="flex-row space-x-3">
-                  <View className="flex-1">
+                <View style={{ flexDirection: 'row', gap: 12 }}>
+                  <View style={{ flex: 1, gap: 8 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                      First Name
+                    </Text>
                     <TextInput
-                      className="h-11 w-full rounded-lg border px-4 text-base"
                       style={{
-                        backgroundColor: colors.background,
-                        borderColor: '#DBE2E9',
+                        height: 44,
+                        borderWidth: 1,
+                        borderColor: colors.grey4,
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        fontSize: 16,
                         color: colors.foreground,
+                        backgroundColor: colors.background,
+                        textAlignVertical: 'center',
+                        ...TEXT_STYLES.regular,
                       }}
-                      placeholder="First name"
+                      placeholder="Enter your first name"
                       placeholderTextColor={colors.grey2}
                       value={firstName}
                       onChangeText={setFirstName}
                       autoCapitalize="words"
                     />
                   </View>
-                  <View className="flex-1">
+                  <View style={{ flex: 1, gap: 8 }}>
+                    <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                      Last Name
+                    </Text>
                     <TextInput
-                      className="h-11 w-full rounded-lg border px-4 text-base"
                       style={{
-                        backgroundColor: colors.background,
-                        borderColor: '#DBE2E9',
+                        height: 44,
+                        borderWidth: 1,
+                        borderColor: colors.grey4,
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        fontSize: 16,
                         color: colors.foreground,
+                        backgroundColor: colors.background,
+                        textAlignVertical: 'center',
+                        ...TEXT_STYLES.regular,
                       }}
-                      placeholder="Last name"
+                      placeholder="Enter your last name"
                       placeholderTextColor={colors.grey2}
                       value={lastName}
                       onChangeText={setLastName}
@@ -220,108 +289,172 @@ const AuthScreen: React.FC = () => {
                 </View>
               )}
 
-              {/* Email */}
-              <TextInput
-                className="h-11 w-full rounded-lg border px-4 text-base"
-                style={{
-                  backgroundColor: colors.background,
-                  borderColor: '#DBE2E9',
-                  color: colors.foreground,
-                }}
-                placeholder="Email"
-                placeholderTextColor={colors.grey2}
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-
-              {/* Password */}
-              <View className="relative">
+              {/* Email Field */}
+              <View style={{ gap: 8 }}>
+                <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                  Email
+                </Text>
                 <TextInput
-                  className="h-11 w-full rounded-lg border pl-4 pr-12 text-base"
                   style={{
-                    backgroundColor: colors.background,
-                    borderColor: '#DBE2E9',
+                    height: 44,
+                    borderWidth: 1,
+                    borderColor: colors.grey4,
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    fontSize: 16,
                     color: colors.foreground,
+                    backgroundColor: colors.background,
+                    textAlignVertical: 'center',
                   }}
-                  placeholder="Password"
+                  placeholder="m@example.com"
                   placeholderTextColor={colors.grey2}
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                 />
-                <TouchableOpacity
-                  className="absolute right-4 top-3"
-                  onPress={() => setShowPassword(!showPassword)}>
-                  <Ionicons
-                    name={showPassword ? 'eye-off' : 'eye'}
-                    size={18}
-                    color={colors.grey2}
-                  />
-                </TouchableOpacity>
               </View>
 
-              {/* Confirm Password for signup */}
-              {isSignUp && (
-                <View className="relative">
+              {/* Password Field */}
+              <View style={{ gap: 8 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                    Password
+                  </Text>
+                  {!isSignUp && (
+                    <TouchableOpacity onPress={() => setShowForgotPassword(true)}>
+                      <Text style={{ fontSize: 14, color: colors.primary, ...TEXT_STYLES.regular }}>
+                        Forgot your password?
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View style={{ position: 'relative' }}>
                   <TextInput
-                    className="h-11 w-full rounded-lg border pl-4 pr-12 text-base"
                     style={{
-                      backgroundColor: colors.background,
-                      borderColor: '#DBE2E9',
+                      height: 44,
+                      borderWidth: 1,
+                      borderColor: colors.grey4,
+                      borderRadius: 8,
+                      paddingHorizontal: 12,
+                      paddingRight: 44,
+                      fontSize: 16,
                       color: colors.foreground,
+                      backgroundColor: colors.background,
+                      textAlignVertical: 'center',
+                      ...TEXT_STYLES.regular,
                     }}
-                    placeholder="Confirm password"
+                    placeholder="Enter your password"
                     placeholderTextColor={colors.grey2}
-                    value={confirmPassword}
-                    onChangeText={setConfirmPassword}
-                    secureTextEntry={!showConfirmPassword}
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry={!showPassword}
                     autoCapitalize="none"
                   />
                   <TouchableOpacity
-                    className="absolute right-4 top-3"
-                    onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                    style={{
+                      position: 'absolute',
+                      right: 12,
+                      top: 0,
+                      bottom: 0,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: 20,
+                    }}
+                    onPress={() => setShowPassword(!showPassword)}>
                     <Ionicons
-                      name={showConfirmPassword ? 'eye-off' : 'eye'}
+                      name={showPassword ? 'eye-off' : 'eye'}
                       size={18}
                       color={colors.grey2}
                     />
                   </TouchableOpacity>
                 </View>
-              )}
+              </View>
 
-              {/* Forgot Password Link (only for sign in) */}
-              {!isSignUp && (
-                <View className="mt-2 items-end">
-                  <TouchableOpacity onPress={() => setShowForgotPassword(true)}>
-                    <Text className="text-sm" style={{ color: colors.primary }}>
-                      Forgot password?
-                    </Text>
-                  </TouchableOpacity>
+              {/* Confirm Password for Sign Up */}
+              {isSignUp && (
+                <View style={{ gap: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                    Confirm Password
+                  </Text>
+                  <View style={{ position: 'relative' }}>
+                    <TextInput
+                      style={{
+                        height: 44,
+                        borderWidth: 1,
+                        borderColor: colors.grey4,
+                        borderRadius: 8,
+                        paddingHorizontal: 12,
+                        paddingRight: 44,
+                        fontSize: 16,
+                        color: colors.foreground,
+                        backgroundColor: colors.background,
+                        textAlignVertical: 'center',
+                      }}
+                      placeholder="Confirm your password"
+                      placeholderTextColor={colors.grey2}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      secureTextEntry={!showConfirmPassword}
+                      autoCapitalize="none"
+                    />
+                    <TouchableOpacity
+                      style={{
+                        position: 'absolute',
+                        right: 12,
+                        top: 0,
+                        bottom: 0,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        width: 20,
+                      }}
+                      onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      <Ionicons
+                        name={showConfirmPassword ? 'eye-off' : 'eye'}
+                        size={18}
+                        color={colors.grey2}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               )}
 
               {/* Submit Button */}
               <TouchableOpacity
-                className={`mt-6 h-11 w-full items-center justify-center rounded-lg ${isLoading ? 'opacity-50' : ''}`}
-                style={{ backgroundColor: colors.primary }}
+                style={{
+                  height: 44,
+                  borderRadius: 8,
+                  marginTop: 8,
+                  opacity: isLoading ? 0.7 : 1,
+                }}
                 onPress={handleAuth}
                 disabled={isLoading}>
-                {isLoading ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <Text className="text-center text-base font-semibold text-white">
-                    {isSignUp ? 'Create Account' : 'Sign In'}
-                  </Text>
-                )}
+                <LinearGradient
+                  colors={['#2563eb', '#06b6d4']} // blue to cyan to match logo
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}>
+                  {isLoading ? (
+                    <LoadingSpinner size={20} color="white" />
+                  ) : (
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', ...TEXT_STYLES.semibold }}>
+                      {isSignUp ? 'Create Account' : 'Login'}
+                    </Text>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
+            </View>
 
-              {/* Toggle Sign Up/Sign In */}
-              <View className="mt-6 flex-row items-center justify-center">
-                <Text className="text-sm" style={{ color: colors.grey2 }}>
+            {/* Toggle Sign Up/Sign In */}
+            <View style={{ marginTop: 24, alignItems: 'center' }}>
+              <View style={{ flexDirection: 'row' }}>
+                <Text style={{ fontSize: 14, color: colors.grey2, ...TEXT_STYLES.regular }}>
                   {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
                 </Text>
                 <TouchableOpacity
@@ -331,8 +464,8 @@ const AuthScreen: React.FC = () => {
                       clearForm();
                     }
                   }}>
-                  <Text className="text-sm font-semibold" style={{ color: colors.primary }}>
-                    {isSignUp ? 'Sign In' : 'Sign Up'}
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.primary, ...TEXT_STYLES.semibold }}>
+                    {isSignUp ? 'Sign In' : 'Sign up'}
                   </Text>
                 </TouchableOpacity>
               </View>
@@ -347,26 +480,45 @@ const AuthScreen: React.FC = () => {
         transparent={true}
         animationType="fade"
         onRequestClose={() => setShowForgotPassword(false)}>
-        <View className="flex-1 items-center justify-center bg-black/50 p-6">
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 24 }}>
           <View
-            className="w-full max-w-sm rounded-2xl p-8"
-            style={{ backgroundColor: colors.background }}>
+            style={{
+              backgroundColor: colors.background,
+              borderRadius: 16,
+              padding: 32,
+              width: '100%',
+              maxWidth: 400,
+            }}>
             <Text
-              className="mb-2 text-center text-2xl font-bold"
-              style={{ color: colors.foreground }}>
+              style={{
+                fontSize: 24,
+                fontWeight: '600',
+                color: colors.foreground,
+                textAlign: 'center',
+                marginBottom: 8,
+                ...TEXT_STYLES.semibold,
+              }}>
               Reset Password
             </Text>
-            <Text className="mb-8 text-center text-base" style={{ color: colors.grey }}>
+            <Text style={{ fontSize: 14, color: colors.grey, textAlign: 'center', marginBottom: 32, ...TEXT_STYLES.regular }}>
               {"Enter your email and we'll send reset instructions."}
             </Text>
 
-            <View className="mb-6">
+            <View style={{ marginBottom: 24, gap: 8 }}>
+              <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                Email
+              </Text>
               <TextInput
-                className="h-11 w-full rounded-lg border px-4 text-base"
                 style={{
-                  backgroundColor: colors.background,
-                  borderColor: '#DBE2E9',
+                  height: 44,
+                  borderWidth: 1,
+                  borderColor: colors.grey4,
+                  borderRadius: 8,
+                  paddingHorizontal: 12,
+                  fontSize: 16,
                   color: colors.foreground,
+                  backgroundColor: colors.background,
+                  textAlignVertical: 'center',
                 }}
                 placeholder="Email"
                 placeholderTextColor={colors.grey2}
@@ -378,26 +530,48 @@ const AuthScreen: React.FC = () => {
               />
             </View>
 
-            <View className="flex-row space-x-3">
+            <View style={{ flexDirection: 'row', gap: 12 }}>
               <TouchableOpacity
-                className="h-11 flex-1 items-center justify-center rounded-lg border"
-                style={{ borderColor: '#DBE2E9' }}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderWidth: 1,
+                  borderColor: colors.grey4,
+                  borderRadius: 8,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
                 onPress={() => setShowForgotPassword(false)}>
-                <Text className="text-base font-medium" style={{ color: colors.foreground }}>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
                   Cancel
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                className={`h-11 flex-1 items-center justify-center rounded-lg ${isLoading ? 'opacity-50' : ''}`}
-                style={{ backgroundColor: colors.primary }}
+                style={{
+                  flex: 1,
+                  height: 44,
+                  borderRadius: 8,
+                  opacity: isLoading ? 0.7 : 1,
+                }}
                 onPress={handleForgotPassword}
                 disabled={isLoading}>
-                {isLoading ? (
-                  <ActivityIndicator color="white" size="small" />
-                ) : (
-                  <Text className="text-base font-semibold text-white">Send Reset</Text>
-                )}
+                <LinearGradient
+                  colors={['#2563eb', '#06b6d4']} // blue to cyan to match logo
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderRadius: 8,
+                  }}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}>
+                  {isLoading ? (
+                    <LoadingSpinner size={20} color="white" />
+                  ) : (
+                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', ...TEXT_STYLES.semibold }}>Send Reset</Text>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </View>

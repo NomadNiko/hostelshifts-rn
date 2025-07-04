@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -8,6 +9,8 @@ import { COLORS } from '../../theme/colors';
 import ThemeToggle from '../../components/ThemeToggle';
 import AvatarDisplay from '../../components/AvatarDisplay';
 import AvatarSelector from '../../components/AvatarSelector';
+import HostelShiftsLogo from '../../components/HostelShiftsLogo';
+import { TEXT_STYLES } from '../../theme/fonts';
 
 export default function ProfileTab() {
   const { isDark } = useTheme();
@@ -49,7 +52,7 @@ export default function ProfileTab() {
       {/* Header */}
       <SafeAreaView>
         <View className="flex-row items-center justify-between px-6 py-4">
-          <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
+          <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
             Profile
           </Text>
           <ThemeToggle />
@@ -59,6 +62,11 @@ export default function ProfileTab() {
       <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 100 }}>
         {user && (
           <>
+            {/* Logo Section */}
+            <View className="items-center px-6 py-6">
+              <HostelShiftsLogo width={280} height={93} />
+            </View>
+
             {/* Avatar Section */}
             <View className="items-center px-6 py-8">
               <TouchableOpacity
@@ -86,7 +94,7 @@ export default function ProfileTab() {
             </View>
 
             {/* User Info Section */}
-            <View className="px-6">
+            <View className="px-6 mt-8">
               <View
                 className="rounded-lg border p-4"
                 style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
@@ -141,10 +149,19 @@ export default function ProfileTab() {
             {/* Actions Section */}
             <View className="mt-8 px-6">
               <TouchableOpacity
-                className="rounded-lg py-4"
-                style={{ backgroundColor: colors.destructive }}
+                className="rounded-lg"
                 onPress={handleLogout}>
-                <Text className="text-center text-base font-semibold text-white">Sign Out</Text>
+                <LinearGradient
+                  colors={['#dc2626', '#991b1b']} // red gradient for destructive action
+                  style={{
+                    paddingVertical: 16,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                  }}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}>
+                  <Text className="text-center text-base font-semibold text-white">Sign Out</Text>
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           </>

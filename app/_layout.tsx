@@ -1,13 +1,15 @@
 import '../global.css';
 
 import { Stack } from 'expo-router';
+import { useFonts, Oxanium_400Regular, Oxanium_500Medium, Oxanium_600SemiBold, Oxanium_700Bold } from '@expo-google-fonts/oxanium';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { SchedulesProvider } from '../contexts/SchedulesContext';
 import { ConversationsProvider } from '../contexts/ConversationsContext';
 import AuthScreen from '../screens/AuthScreen';
-import { View, ActivityIndicator } from 'react-native';
+import { View } from 'react-native';
 import { COLORS } from '../theme/colors';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 export const unstable_settings = {
   // Ensure that reloading on `/modal` keeps a back button present.
@@ -22,7 +24,7 @@ function AppContent() {
       <View
         className="flex-1 items-center justify-center"
         style={{ backgroundColor: COLORS.dark.background }}>
-        <ActivityIndicator size="large" color={COLORS.dark.primary} />
+        <LoadingSpinner size={48} color={COLORS.dark.primary} />
       </View>
     );
   }
@@ -44,6 +46,23 @@ function AppContent() {
 }
 
 export default function RootLayout() {
+  let [fontsLoaded] = useFonts({
+    Oxanium_400Regular,
+    Oxanium_500Medium,
+    Oxanium_600SemiBold,
+    Oxanium_700Bold,
+  });
+
+  if (!fontsLoaded) {
+    return (
+      <View
+        className="flex-1 items-center justify-center"
+        style={{ backgroundColor: COLORS.dark.background }}>
+        <LoadingSpinner size={48} color={COLORS.dark.primary} />
+      </View>
+    );
+  }
+
   return (
     <ThemeProvider>
       <AuthProvider>

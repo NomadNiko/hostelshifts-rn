@@ -15,8 +15,10 @@ import ThemeToggle from '../../components/ThemeToggle';
 import ConversationScreen from '../../screens/ConversationScreen';
 import NewConversationModal from '../../components/NewConversationModal';
 import ConversationCard from '../../components/messaging/ConversationCard';
+import LoadingSpinner from '../../components/LoadingSpinner';
 import { useMessagingStyles } from '../../hooks/useMessagingStyles';
 import { Conversation } from '../../types/messaging';
+import { TEXT_STYLES } from '../../theme/fonts';
 
 export default function ConversationsTab() {
   const { user } = useAuth();
@@ -66,35 +68,44 @@ export default function ConversationsTab() {
   if (error) {
     return (
       <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
-        <SafeAreaView>
-          <View className="flex-row items-center justify-between px-6 py-4">
-            <View>
-              <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
-                Messages
-              </Text>
-              <Text className="text-sm" style={{ color: colors.grey }}>
-                Welcome back, {user?.firstName || user?.email}!
-              </Text>
+        {/* Fixed Header */}
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }}>
+          <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
+            <View className="flex-row items-center justify-between px-6 pb-4">
+              <View>
+                <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+                  Messages
+                </Text>
+                <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
+                  Welcome back, {user?.firstName || user?.email}!
+                </Text>
+              </View>
             </View>
-            <ThemeToggle />
-          </View>
-        </SafeAreaView>
+          </SafeAreaView>
+        </View>
+        
         <View
           className="mx-4 flex-1 items-center justify-center rounded p-6"
-          style={{ backgroundColor: colors.card + '50' }}>
+          style={{ backgroundColor: colors.card + '50', marginTop: 160 }}>
           <View className="rounded p-6" style={{ backgroundColor: colors.destructive + '20' }}>
             <Ionicons name="alert-circle" size={48} color={colors.destructive} />
           </View>
           <Text
             className="mt-6 px-4 text-center text-lg font-semibold"
-            style={{ color: colors.foreground }}>
+            style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
             {error}
           </Text>
           <TouchableOpacity
             className="mt-6 rounded px-8 py-4"
             style={{ backgroundColor: colors.primary }}
             onPress={onRefresh}>
-            <Text className="font-semibold text-white">Try Again</Text>
+            <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>Try Again</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -102,92 +113,90 @@ export default function ConversationsTab() {
   }
 
   return (
-    <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
-      {/* Header */}
-      <SafeAreaView>
-        <View className="flex-row items-center justify-between px-6 py-4">
-          <View>
-            <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
-              Messages
-            </Text>
-            <Text className="text-sm" style={{ color: colors.grey }}>
-              Welcome back, {user?.firstName || user?.email}!
-            </Text>
-          </View>
-          <View className="flex-row items-center space-x-2">
-            <TouchableOpacity
-              className="rounded p-3"
-              style={{ backgroundColor: colors.primary }}
-              onPress={handleNewConversation}>
-              <Ionicons name="add" size={20} color="white" />
-            </TouchableOpacity>
-            <ThemeToggle />
-          </View>
+    <>
+      <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
+        {/* Fixed Header */}
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+        }}>
+          <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
+            <View className="flex-row items-center justify-between px-6 pb-4">
+              <View>
+                <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+                  Messages
+                </Text>
+                <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
+                  Welcome back, {user?.firstName || user?.email}!
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="rounded p-3"
+                style={{ backgroundColor: colors.primary }}
+                onPress={handleNewConversation}>
+                <Ionicons name="add" size={20} color="white" />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </View>
-      </SafeAreaView>
 
-      <ScrollView
-        className="flex-1 rounded-t"
-        contentContainerStyle={{ paddingBottom: 100 }}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
-        {/* Conversations List */}
-        {conversations.length > 0 ? (
-          <View className="px-4 pt-4">
-            {conversations.map((conversation) => (
-              <ConversationCard
-                key={conversation._id}
-                conversation={conversation}
-                currentUserId={user?._id}
-                onPress={handleConversationPress}
-                isDark={isDark}
-              />
-            ))}
-          </View>
-        ) : !isLoading ? (
-          <View
-            className="mx-4 flex-1 items-center justify-center rounded p-6"
-            style={{ backgroundColor: colors.card + '50' }}>
-            <View className="rounded p-6" style={{ backgroundColor: colors.grey5 }}>
-              <Ionicons name="chatbubbles-outline" size={64} color={colors.grey2} />
+        <ScrollView
+          className="flex-1 rounded-t"
+          contentContainerStyle={{ paddingTop: 120, paddingBottom: 20 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
+          {/* Conversations List */}
+          {conversations.length > 0 ? (
+            <View className="px-4 pt-4">
+              {conversations.map((conversation) => (
+                <ConversationCard
+                  key={conversation._id}
+                  conversation={conversation}
+                  currentUserId={user?._id}
+                  onPress={handleConversationPress}
+                  isDark={isDark}
+                />
+              ))}
             </View>
-            <Text
-              className="mt-6 text-center text-lg font-semibold"
-              style={{ color: colors.foreground }}>
-              No Conversations Yet
-            </Text>
-            <Text className="mt-2 px-4 text-center" style={{ color: colors.grey2 }}>
-              Start a conversation with your team members to see them here.
-            </Text>
-            <TouchableOpacity
-              className="mt-6 rounded px-8 py-4"
-              style={{ backgroundColor: colors.primary }}
-              onPress={handleNewConversation}>
-              <Text className="font-semibold text-white">Start Conversation</Text>
-            </TouchableOpacity>
-          </View>
-        ) : null}
-
-        {/* Loading State */}
-        {isLoading && conversations.length === 0 && (
-          <View
-            className="mx-4 flex-1 items-center justify-center rounded p-6"
-            style={{ backgroundColor: colors.card + '30' }}>
-            <View className="rounded p-6" style={{ backgroundColor: colors.grey5 }}>
-              <ActivityIndicator size="large" color={colors.primary} />
+          ) : !isLoading ? (
+            <View
+              className="mx-4 flex-1 items-center justify-center rounded p-6"
+              style={{ backgroundColor: colors.card + '50' }}>
+              <View className="rounded p-6" style={{ backgroundColor: colors.grey5 }}>
+                <Ionicons name="chatbubbles-outline" size={64} color={colors.grey2} />
+              </View>
+              <Text
+                className="mt-6 text-center text-lg font-semibold"
+                style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
+                No Conversations Yet
+              </Text>
+              <Text className="mt-2 px-4 text-center" style={{ color: colors.grey2, ...TEXT_STYLES.regular }}>
+                Start a conversation with your team members to see them here.
+              </Text>
+              <TouchableOpacity
+                className="mt-6 rounded px-8 py-4"
+                style={{ backgroundColor: colors.primary }}
+                onPress={handleNewConversation}>
+                <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>Start Conversation</Text>
+              </TouchableOpacity>
             </View>
-            <Text className="mt-4 text-center" style={{ color: colors.grey2 }}>
-              Loading conversations...
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+          ) : null}
+        </ScrollView>
 
-      {/* New Conversation Modal */}
-      <NewConversationModal
-        visible={showNewConversationModal}
-        onClose={() => setShowNewConversationModal(false)}
-        onConversationCreated={handleConversationCreated}
-      />
-    </View>
+        {/* New Conversation Modal */}
+        <NewConversationModal
+          visible={showNewConversationModal}
+          onClose={() => setShowNewConversationModal(false)}
+          onConversationCreated={handleConversationCreated}
+        />
+      </View>
+      
+      {/* Full Screen Loading Overlay */}
+      {isLoading && conversations.length === 0 && (
+        <LoadingSpinner size={100} color={colors.primary} />
+      )}
+    </>
   );
 }

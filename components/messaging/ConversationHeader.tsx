@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ConversationHeaderProps } from '../../types/messaging';
@@ -13,30 +13,77 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 }) => {
   const colors = isDark ? COLORS.dark : COLORS.light;
   const styles = createMessagingStyles(colors, isDark);
+  const [showParticipants, setShowParticipants] = useState(false);
 
   const displayName = getConversationDisplayName(conversation);
   const participantCount = conversation.participants?.length || 0;
+  const isGroupChat = participantCount > 3;
+
+  const toggleParticipants = () => {
+    setShowParticipants(!showParticipants);
+  };
 
   return (
-    <View
-      className={styles.layout.headerWithBorder}
-      style={[{ borderBottomColor: colors.grey4 }, styles.colors.card]}>
-      <TouchableOpacity
-        onPress={onBack}
-        className="mr-4 rounded p-2"
-        style={styles.colors.grey5}
-        activeOpacity={0.7}>
-        <Ionicons name="arrow-back" size={24} color={colors.foreground} />
-      </TouchableOpacity>
+    <View style={styles.colors.card}>
+      <View className="flex-row items-center justify-between px-6 pb-4">
+        <TouchableOpacity
+          onPress={onBack}
+          className="mr-4 rounded p-2"
+          style={styles.colors.grey5}
+          activeOpacity={0.7}>
+          <Ionicons name="arrow-back" size={24} color={colors.foreground} />
+        </TouchableOpacity>
 
-      <View className="flex-1">
-        <Text className="text-xl font-bold" style={styles.colors.textPrimary}>
-          {displayName}
-        </Text>
-        <Text className="text-sm" style={styles.colors.textCaption}>
-          {participantCount} participant{participantCount !== 1 ? 's' : ''}
-        </Text>
+        <View className="flex-1">
+          <Text className="text-xl font-bold" style={styles.colors.textPrimary}>
+            {isGroupChat ? 'Group Chat' : displayName}
+          </Text>
+          <Text className="text-sm" style={styles.colors.textCaption}>
+            {participantCount} participant{participantCount !== 1 ? 's' : ''}
+          </Text>
+        </View>
+
+        {isGroupChat && (
+          <TouchableOpacity
+            onPress={toggleParticipants}
+            className="rounded p-2"
+            style={styles.colors.grey5}
+            activeOpacity={0.7}>
+            <Ionicons 
+              name={showParticipants ? "chevron-up" : "people"} 
+              size={24} 
+              color={colors.foreground} 
+            />
+          </TouchableOpacity>
+        )}
       </View>
+
+      {/* Participants Dropdown */}
+      {isGroupChat && showParticipants && (
+        <View 
+          className="mx-6 mb-4 rounded-lg p-4"
+          style={{ backgroundColor: colors.grey5 }}>
+          <Text className="mb-3 font-semibold" style={{ color: colors.foreground }}>
+            Participants
+          </Text>
+          {conversation.participants?.map((participant, index) => (
+            <View key={participant._id || index} className="mb-2 flex-row items-center">
+              <View 
+                className="mr-3 h-8 w-8 rounded-full items-center justify-center"
+                style={{ backgroundColor: colors.primary }}>
+                <Text className="text-sm font-bold text-white">
+                  {(participant.firstName?.[0] || participant.email?.[0] || '?').toUpperCase()}
+                </Text>
+              </View>
+              <Text style={{ color: colors.foreground }}>
+                {participant.firstName && participant.lastName 
+                  ? `${participant.firstName} ${participant.lastName}`
+                  : participant.email}
+              </Text>
+            </View>
+          ))}
+        </View>
+      )}
     </View>
   );
 };
