@@ -77,6 +77,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
             maxLength={1000}
             returnKeyType="default"
             blurOnSubmit={false}
+            keyboardAppearance={isDark ? 'dark' : 'light'}
           />
         </View>
 

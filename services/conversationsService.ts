@@ -73,6 +73,8 @@ const cleanConversationData = (conversation: any): Conversation => {
   return {
     ...conversation,
     _id: convertBufferToId(conversation._id),
+    // Map server's 'name' field to client's 'title' field
+    title: conversation.name,
     participants:
       conversation.participants?.map((p: any) => ({
         ...p,
@@ -214,10 +216,16 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
 
+      // Map title to name for server compatibility, but keep title for client use
+      const serverData = {
+        participantIds: conversationData.participantIds,
+        name: conversationData.title || conversationData.name,
+      };
+
       const response = await fetch(`${API_BASE}/conversations`, {
         method: 'POST',
         headers,
-        body: JSON.stringify(conversationData),
+        body: JSON.stringify(serverData),
       });
 
       if (!response.ok) {
@@ -288,10 +296,15 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
 
+      // Map title to name for server compatibility
+      const serverUpdateData = {
+        name: updateData.title,
+      };
+
       const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
         method: 'PATCH',
         headers,
-        body: JSON.stringify(updateData),
+        body: JSON.stringify(serverUpdateData),
       });
 
       if (!response.ok) {

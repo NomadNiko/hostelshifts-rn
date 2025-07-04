@@ -15,6 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '../theme/colors';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import authService from '../services/authService';
 import { Ionicons } from '@expo/vector-icons';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -23,6 +24,7 @@ import { TEXT_STYLES } from '../theme/fonts';
 
 const AuthScreen: React.FC = () => {
   const { checkSession } = useAuth();
+  const { isDark } = useTheme();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('aloha@ixplor.app');
   const [password, setPassword] = useState('password');
@@ -38,7 +40,7 @@ const AuthScreen: React.FC = () => {
   const slideAnim = new Animated.Value(0);
   const opacityAnim = new Animated.Value(0);
 
-  const colors = COLORS.dark;
+  const colors = isDark ? COLORS.dark : COLORS.light;
 
   // Start animation on component mount
   useEffect(() => {
@@ -260,6 +262,7 @@ const AuthScreen: React.FC = () => {
                       value={firstName}
                       onChangeText={setFirstName}
                       autoCapitalize="words"
+                      keyboardAppearance={isDark ? 'dark' : 'light'}
                     />
                   </View>
                   <View style={{ flex: 1, gap: 8 }}>
@@ -284,6 +287,7 @@ const AuthScreen: React.FC = () => {
                       value={lastName}
                       onChangeText={setLastName}
                       autoCapitalize="words"
+                      keyboardAppearance={isDark ? 'dark' : 'light'}
                     />
                   </View>
                 </View>
@@ -313,6 +317,7 @@ const AuthScreen: React.FC = () => {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardAppearance={isDark ? 'dark' : 'light'}
                 />
               </View>
 
@@ -351,6 +356,7 @@ const AuthScreen: React.FC = () => {
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
                     autoCapitalize="none"
+                    keyboardAppearance={isDark ? 'dark' : 'light'}
                   />
                   <TouchableOpacity
                     style={{
@@ -398,6 +404,7 @@ const AuthScreen: React.FC = () => {
                       onChangeText={setConfirmPassword}
                       secureTextEntry={!showConfirmPassword}
                       autoCapitalize="none"
+                      keyboardAppearance={isDark ? 'dark' : 'light'}
                     />
                     <TouchableOpacity
                       style={{
@@ -525,6 +532,7 @@ const AuthScreen: React.FC = () => {
                 value={email}
                 onChangeText={setEmail}
                 keyboardType="email-address"
+                keyboardAppearance={isDark ? 'dark' : 'light'}
                 autoCapitalize="none"
                 autoCorrect={false}
               />

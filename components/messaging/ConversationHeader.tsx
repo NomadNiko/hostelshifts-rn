@@ -17,9 +17,13 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   const [showParticipants, setShowParticipants] = useState(false);
   const [showEditTitleModal, setShowEditTitleModal] = useState(false);
 
-  const displayName = getConversationDisplayName(conversation);
   const participantCount = conversation.participants?.length || 0;
   const isGroupChat = participantCount > 3;
+  
+  // Show "Group Chat" for groups >3 people without a title, otherwise use util function
+  const displayName = isGroupChat && !conversation.title 
+    ? "Group Chat" 
+    : getConversationDisplayName(conversation);
 
   const toggleParticipants = () => {
     setShowParticipants(!showParticipants);

@@ -33,6 +33,14 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="time-clock"
+        options={{
+          title: 'Time Clock',
+          tabBarIcon: ({ color }) => <TabBarIcon name="clock-o" color={color} />,
+          headerShown: false,
+        }}
+      />
+      <Tabs.Screen
         name="conversations"
         options={{
           title: 'Messages',

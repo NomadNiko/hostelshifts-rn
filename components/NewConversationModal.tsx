@@ -229,6 +229,7 @@ export default function NewConversationModal({
                 value={searchTerm}
                 onChangeText={handleSearch}
                 autoFocus
+                keyboardAppearance={isDark ? 'dark' : 'light'}
               />
               {isSearching && <LoadingSpinner size={16} color={colors.primary} />}
             </View>
@@ -269,6 +270,7 @@ export default function NewConversationModal({
                 value={conversationTitle}
                 onChangeText={setConversationTitle}
                 maxLength={50}
+                keyboardAppearance={isDark ? 'dark' : 'light'}
               />
             </View>
           )}

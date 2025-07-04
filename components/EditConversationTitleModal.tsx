@@ -128,6 +128,7 @@ export default function EditConversationTitleModal({
               onChangeText={setTitle}
               maxLength={50}
               autoFocus
+              keyboardAppearance={isDark ? 'dark' : 'light'}
             />
             <Text style={{ 
               fontSize: 12, 

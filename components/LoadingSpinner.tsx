@@ -29,26 +29,6 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const [shouldShow, setShouldShow] = useState(true);
   const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-  useEffect(() => {
-    // Start the animation
-    progress.value = withRepeat(
-      withTiming(1, { duration: 500, easing: Easing.linear }),
-      -1,
-      false
-    );
-
-    // Minimum display time
-    const timer = setTimeout(() => {
-      setShouldShow(false);
-    }, minDisplayTime);
-
-    return () => clearTimeout(timer);
-  }, [progress, minDisplayTime]);
-
-  if (!shouldShow) {
-    return null;
-  }
-
   // Cube animation (bxSpin keyframes)
   const cubeAnimatedStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
@@ -100,6 +80,26 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   const shadowHeight = Math.max(size * 0.1, 8);
   const shadowTop = size + size * 0.6; // Position shadow below the cube
+
+  useEffect(() => {
+    // Start the animation
+    progress.value = withRepeat(
+      withTiming(1, { duration: 500, easing: Easing.linear }),
+      -1,
+      false
+    );
+
+    // Minimum display time
+    const timer = setTimeout(() => {
+      setShouldShow(false);
+    }, minDisplayTime);
+
+    return () => clearTimeout(timer);
+  }, [progress, minDisplayTime]);
+
+  if (!shouldShow) {
+    return null;
+  }
 
   return (
     <View style={{ 

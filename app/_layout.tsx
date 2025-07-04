@@ -6,6 +6,7 @@ import { ThemeProvider } from '../contexts/ThemeContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { SchedulesProvider } from '../contexts/SchedulesContext';
 import { ConversationsProvider } from '../contexts/ConversationsContext';
+import { TimeClockProvider } from '../contexts/TimeClockContext';
 import AuthScreen from '../screens/AuthScreen';
 import { View } from 'react-native';
 import { COLORS } from '../theme/colors';
@@ -36,10 +37,12 @@ function AppContent() {
   return (
     <SchedulesProvider>
       <ConversationsProvider>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-        </Stack>
+        <TimeClockProvider>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          </Stack>
+        </TimeClockProvider>
       </ConversationsProvider>
     </SchedulesProvider>
   );

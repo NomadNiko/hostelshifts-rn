@@ -43,4 +43,18 @@ export const API_ENDPOINTS = {
     list: '/shift-types',
     create: '/shift-types',
   },
+  timeClock: {
+    clockIn: '/time-clock-entries/clock-in',
+    clockOut: '/time-clock-entries/clock-out',
+    status: '/time-clock-entries/status',
+    myEntries: '/time-clock-entries/my-entries',
+    entry: '/time-clock-entries/entry/:id',
+    // Admin endpoints
+    allEntries: '/time-clock-entries/entries',
+    active: '/time-clock-entries/active',
+    summary: '/time-clock-entries/summary',
+    employeeEntries: '/time-clock-entries/employee/:employeeId/entries',
+    employeeSummary: '/time-clock-entries/employee/:employeeId/summary',
+    employeeStatus: '/time-clock-entries/employee/:employeeId/status',
+  },
 };
