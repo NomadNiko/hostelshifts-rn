@@ -4,6 +4,7 @@ import conversationsService, {
   Message,
   MessagesResponse,
   CreateConversationDto,
+  UpdateConversationDto,
   SendMessageDto,
   User,
 } from '../services/conversationsService';
@@ -27,6 +28,7 @@ interface ConversationsContextType {
   loadMessages: (conversationId: string, page?: number) => Promise<void>;
   sendMessage: (conversationId: string, content: string) => Promise<void>;
   createConversation: (data: CreateConversationDto) => Promise<Conversation>;
+  updateConversation: (conversationId: string, data: UpdateConversationDto) => Promise<Conversation>;
   searchUsers: (searchTerm: string) => Promise<User[]>;
   refreshData: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
@@ -61,10 +63,8 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     try {
       setIsLoading(true);
       setError(null);
-      console.log('🚀 ConversationsContext: Starting to load conversations...');
 
       const conversationsData = await conversationsService.getConversations();
-      console.log('📥 ConversationsContext: Received conversations data:', conversationsData);
 
       // Sort conversations by lastMessageAt (most recent first)
       const sortedConversations = conversationsData.sort(
@@ -72,7 +72,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
       );
 
       setConversations(sortedConversations);
-      console.log('✅ ConversationsContext: Conversations loaded successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error loading conversations:', error);
       setError(error instanceof Error ? error.message : 'Failed to load conversations');
@@ -82,15 +81,11 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
   };
 
   const selectConversation = (conversation: Conversation) => {
-    console.log('🎯 ConversationsContext: Selecting conversation:', conversation._id);
     setCurrentConversation(conversation);
   };
 
   const loadMessages = async (conversationId: string, page: number = 1) => {
     try {
-      console.log(
-        `📝 ConversationsContext: Loading messages for conversation ${conversationId}, page ${page}`
-      );
 
       const messagesResponse: MessagesResponse = await conversationsService.getMessages(
         conversationId,
@@ -98,7 +93,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
         20
       );
 
-      console.log('📥 ConversationsContext: Received messages:', messagesResponse);
 
       setMessages((prev) => {
         const existingMessages = prev[conversationId] || [];
@@ -125,7 +119,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
         [conversationId]: messagesResponse.messages.length === messagesResponse.limit,
       }));
 
-      console.log('✅ ConversationsContext: Messages loaded successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error loading messages:', error);
       setError(error instanceof Error ? error.message : 'Failed to load messages');
@@ -135,12 +128,10 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
   const sendMessage = async (conversationId: string, content: string) => {
     try {
       setSendingMessage(true);
-      console.log(`📤 ConversationsContext: Sending message to ${conversationId}:`, content);
 
       const messageData: SendMessageDto = { content };
       const sentMessage = await conversationsService.sendMessage(conversationId, messageData);
 
-      console.log('📤 ConversationsContext: Message sent:', sentMessage);
 
       // Add the new message to the end of the messages list (newest at bottom)
       setMessages((prev) => ({
@@ -157,7 +148,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
           .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
       );
 
-      console.log('✅ ConversationsContext: Message sent successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error sending message:', error);
       setError(error instanceof Error ? error.message : 'Failed to send message');
@@ -170,15 +160,12 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
   const createConversation = async (data: CreateConversationDto): Promise<Conversation> => {
     try {
       setIsLoading(true);
-      console.log('🆕 ConversationsContext: Creating conversation:', data);
 
       const newConversation = await conversationsService.createConversation(data);
-      console.log('🆕 ConversationsContext: Conversation created:', newConversation);
 
       // Add the new conversation to the list
       setConversations((prev) => [newConversation, ...prev]);
 
-      console.log('✅ ConversationsContext: Conversation created successfully');
       return newConversation;
     } catch (error) {
       console.error('❌ ConversationsContext: Error creating conversation:', error);
@@ -191,10 +178,8 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
   const searchUsers = async (searchTerm: string): Promise<User[]> => {
     try {
-      console.log('🔍 ConversationsContext: Searching users:', searchTerm);
 
       const users = await conversationsService.searchUsers(searchTerm);
-      console.log('👥 ConversationsContext: Users found:', users);
 
       return users;
     } catch (error) {
@@ -204,9 +189,32 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     }
   };
 
+  const updateConversation = async (conversationId: string, data: UpdateConversationDto): Promise<Conversation> => {
+    try {
+      const updatedConversation = await conversationsService.updateConversation(conversationId, data);
+
+      // Update the conversation in the list
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv._id === conversationId ? updatedConversation : conv
+        )
+      );
+
+      // Update current conversation if it's the one being updated
+      if (currentConversation?._id === conversationId) {
+        setCurrentConversation(updatedConversation);
+      }
+
+      return updatedConversation;
+    } catch (error) {
+      console.error('❌ ConversationsContext: Error updating conversation:', error);
+      setError(error instanceof Error ? error.message : 'Failed to update conversation');
+      throw error;
+    }
+  };
+
   const deleteConversation = async (conversationId: string) => {
     try {
-      console.log('🗑️ ConversationsContext: Deleting conversation:', conversationId);
 
       await conversationsService.deleteConversation(conversationId);
 
@@ -225,7 +233,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
         setCurrentConversation(null);
       }
 
-      console.log('✅ ConversationsContext: Conversation deleted successfully');
     } catch (error) {
       console.error('❌ ConversationsContext: Error deleting conversation:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete conversation');
@@ -256,6 +263,7 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     loadMessages,
     sendMessage,
     createConversation,
+    updateConversation,
     searchUsers,
     refreshData,
     deleteConversation,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, ScrollView, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -18,6 +18,26 @@ export default function ProfileTab() {
   const colors = isDark ? COLORS.dark : COLORS.light;
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  
+  // Animation values
+  const slideAnim = new Animated.Value(0);
+  const opacityAnim = new Animated.Value(0);
+
+  // Start animation on component mount
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 3000,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -63,9 +83,27 @@ export default function ProfileTab() {
         {user && (
           <>
             {/* Logo Section */}
-            <View className="items-center px-6 py-6">
+            <Animated.View 
+              className="items-center px-6 py-6"
+              style={{ 
+                opacity: opacityAnim,
+                transform: [
+                  {
+                    scale: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0.3, 1],
+                    }),
+                  },
+                  {
+                    translateY: slideAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [50, 0],
+                    }),
+                  },
+                ],
+              }}>
               <HostelShiftsLogo width={280} height={93} />
-            </View>
+            </Animated.View>
 
             {/* Avatar Section */}
             <View className="items-center px-6 py-8">

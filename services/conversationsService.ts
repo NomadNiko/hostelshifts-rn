@@ -20,6 +20,7 @@ export interface Conversation {
   _id: string;
   participants: User[];
   name?: string;
+  title?: string;
   lastMessageAt: string;
   lastMessage?: Message;
   createdAt: string;
@@ -46,6 +47,11 @@ export interface MessagesResponse {
 export interface CreateConversationDto {
   participantIds: string[];
   name?: string;
+  title?: string;
+}
+
+export interface UpdateConversationDto {
+  title?: string;
 }
 
 export interface SendMessageDto {
@@ -101,7 +107,6 @@ class ConversationsService {
   async getConversations(): Promise<Conversation[]> {
     try {
       const headers = await this.getAuthHeaders();
-      console.log('🔍 Fetching conversations from:', `${API_BASE}/conversations`);
 
       const response = await fetch(`${API_BASE}/conversations`, {
         method: 'GET',
@@ -113,11 +118,9 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('💬 Raw conversations data from backend:', JSON.stringify(data, null, 2));
 
       if (Array.isArray(data)) {
         const cleanedConversations = data.map(cleanConversationData);
-        console.log('💬 Cleaned conversations:', JSON.stringify(cleanedConversations, null, 2));
         return cleanedConversations;
       }
 
@@ -131,7 +134,6 @@ class ConversationsService {
   async getConversation(conversationId: string): Promise<Conversation> {
     try {
       const headers = await this.getAuthHeaders();
-      console.log('🔍 Fetching conversation:', conversationId);
 
       const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
         method: 'GET',
@@ -143,10 +145,8 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('💬 Raw conversation data:', JSON.stringify(data, null, 2));
 
       const cleanedConversation = cleanConversationData(data);
-      console.log('💬 Cleaned conversation:', JSON.stringify(cleanedConversation, null, 2));
       return cleanedConversation;
     } catch (error) {
       console.error('Get conversation error:', error);
@@ -162,7 +162,6 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       const url = `${API_BASE}/conversations/${conversationId}/messages?page=${page}&limit=${limit}`;
-      console.log('🔍 Fetching messages from:', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -174,14 +173,12 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('📝 Raw messages data:', JSON.stringify(data, null, 2));
 
       const cleanedMessages = {
         ...data,
         messages: data.messages?.map(cleanMessageData) || [],
       };
 
-      console.log('📝 Cleaned messages:', JSON.stringify(cleanedMessages, null, 2));
       return cleanedMessages;
     } catch (error) {
       console.error('Get messages error:', error);
@@ -192,7 +189,6 @@ class ConversationsService {
   async sendMessage(conversationId: string, messageData: SendMessageDto): Promise<Message> {
     try {
       const headers = await this.getAuthHeaders();
-      console.log('📤 Sending message to:', conversationId, messageData);
 
       const response = await fetch(`${API_BASE}/conversations/${conversationId}/messages`, {
         method: 'POST',
@@ -205,10 +201,8 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('📤 Raw sent message data:', JSON.stringify(data, null, 2));
 
       const cleanedMessage = cleanMessageData(data);
-      console.log('📤 Cleaned sent message:', JSON.stringify(cleanedMessage, null, 2));
       return cleanedMessage;
     } catch (error) {
       console.error('Send message error:', error);
@@ -219,7 +213,6 @@ class ConversationsService {
   async createConversation(conversationData: CreateConversationDto): Promise<Conversation> {
     try {
       const headers = await this.getAuthHeaders();
-      console.log('🆕 Creating conversation:', conversationData);
 
       const response = await fetch(`${API_BASE}/conversations`, {
         method: 'POST',
@@ -232,10 +225,8 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('🆕 Raw created conversation data:', JSON.stringify(data, null, 2));
 
       const cleanedConversation = cleanConversationData(data);
-      console.log('🆕 Cleaned created conversation:', JSON.stringify(cleanedConversation, null, 2));
       return cleanedConversation;
     } catch (error) {
       console.error('Create conversation error:', error);
@@ -247,7 +238,6 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
       const url = `${API_BASE}/conversations/users/search?q=${encodeURIComponent(searchTerm)}`;
-      console.log('🔍 Searching users:', url);
 
       const response = await fetch(url, {
         method: 'GET',
@@ -259,7 +249,6 @@ class ConversationsService {
       }
 
       const data = await response.json();
-      console.log('👥 Raw user search data:', JSON.stringify(data, null, 2));
 
       if (Array.isArray(data)) {
         // Ensure all user IDs are converted from buffer objects to strings
@@ -279,7 +268,6 @@ class ConversationsService {
   async deleteConversation(conversationId: string): Promise<void> {
     try {
       const headers = await this.getAuthHeaders();
-      console.log('🗑️ Deleting conversation:', conversationId);
 
       const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
         method: 'DELETE',
@@ -290,9 +278,31 @@ class ConversationsService {
         throw new Error(`Failed to delete conversation: ${response.status}`);
       }
 
-      console.log('🗑️ Conversation deleted successfully');
     } catch (error) {
       console.error('Delete conversation error:', error);
+      throw error;
+    }
+  }
+
+  async updateConversation(conversationId: string, updateData: UpdateConversationDto): Promise<Conversation> {
+    try {
+      const headers = await this.getAuthHeaders();
+
+      const response = await fetch(`${API_BASE}/conversations/${conversationId}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify(updateData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update conversation: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const cleanedConversation = cleanConversationData(data);
+      return cleanedConversation;
+    } catch (error) {
+      console.error('Update conversation error:', error);
       throw error;
     }
   }

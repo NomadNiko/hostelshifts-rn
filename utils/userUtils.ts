@@ -16,6 +16,7 @@ type Participant = User;
 interface Conversation {
   _id: string;
   name?: string;
+  title?: string;
   participants: Participant[];
   lastMessageAt: string;
 }
@@ -41,7 +42,12 @@ export const getConversationDisplayName = (
   conversation: Conversation,
   currentUserId?: string
 ): string => {
-  // Always show participant names, ignore conversation.name
+  // If conversation has a title, use that instead
+  if (conversation.title && conversation.title.trim()) {
+    return conversation.title;
+  }
+
+  // Otherwise, show participant names
   if (conversation.participants && conversation.participants.length > 0) {
     // Try filtering out current user, but if that fails, show all participants
     let participantsToShow = conversation.participants.filter(

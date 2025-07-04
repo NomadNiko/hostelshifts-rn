@@ -5,6 +5,7 @@ import { ConversationHeaderProps } from '../../types/messaging';
 import { createMessagingStyles } from './styles';
 import { COLORS } from '../../theme/colors';
 import { getConversationDisplayName } from '../../utils/userUtils';
+import EditConversationTitleModal from '../EditConversationTitleModal';
 
 const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   conversation,
@@ -14,6 +15,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
   const colors = isDark ? COLORS.dark : COLORS.light;
   const styles = createMessagingStyles(colors, isDark);
   const [showParticipants, setShowParticipants] = useState(false);
+  const [showEditTitleModal, setShowEditTitleModal] = useState(false);
 
   const displayName = getConversationDisplayName(conversation);
   const participantCount = conversation.participants?.length || 0;
@@ -36,7 +38,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
         <View className="flex-1">
           <Text className="text-xl font-bold" style={styles.colors.textPrimary}>
-            {isGroupChat ? 'Group Chat' : displayName}
+            {displayName}
           </Text>
           <Text className="text-sm" style={styles.colors.textCaption}>
             {participantCount} participant{participantCount !== 1 ? 's' : ''}
@@ -82,8 +84,28 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               </Text>
             </View>
           ))}
+          
+          {/* Edit Title Button */}
+          <TouchableOpacity
+            className="mt-3 flex-row items-center justify-center rounded py-3"
+            style={{ backgroundColor: colors.primary + '20', borderColor: colors.primary, borderWidth: 1 }}
+            onPress={() => setShowEditTitleModal(true)}
+            activeOpacity={0.7}>
+            <Ionicons name="pencil" size={16} color={colors.primary} />
+            <Text className="ml-2 font-medium" style={{ color: colors.primary }}>
+              Edit Conversation Title
+            </Text>
+          </TouchableOpacity>
         </View>
       )}
+      
+      {/* Edit Title Modal */}
+      <EditConversationTitleModal
+        visible={showEditTitleModal}
+        onClose={() => setShowEditTitleModal(false)}
+        conversationId={conversation._id}
+        currentTitle={conversation.title}
+      />
     </View>
   );
 };

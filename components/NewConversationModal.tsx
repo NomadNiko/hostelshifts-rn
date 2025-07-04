@@ -45,6 +45,7 @@ export default function NewConversationModal({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [conversationTitle, setConversationTitle] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
 
@@ -90,7 +91,14 @@ export default function NewConversationModal({
     try {
       setIsCreating(true);
       const participantIds = selectedUsers.map((user) => user._id);
-      const conversation = await createConversation({ participantIds });
+      const conversationData: any = { participantIds };
+      
+      // Add title if provided
+      if (conversationTitle.trim()) {
+        conversationData.title = conversationTitle.trim();
+      }
+      
+      const conversation = await createConversation(conversationData);
 
       onConversationCreated(conversation);
       handleClose();
@@ -106,6 +114,7 @@ export default function NewConversationModal({
     setSearchTerm('');
     setSearchResults([]);
     setSelectedUsers([]);
+    setConversationTitle('');
     setIsSearching(false);
     setIsCreating(false);
     onClose();
@@ -237,6 +246,29 @@ export default function NewConversationModal({
                 renderItem={renderSelectedUser}
                 keyExtractor={(item) => item._id}
                 showsHorizontalScrollIndicator={false}
+              />
+            </View>
+          )}
+
+          {/* Conversation Title */}
+          {selectedUsers.length > 0 && (
+            <View className="px-6 pb-4">
+              <Text className="mb-2 text-sm font-medium" style={{ color: colors.grey2 }}>
+                Conversation Title (Optional)
+              </Text>
+              <TextInput
+                className="rounded px-4 py-3 text-base"
+                style={{ 
+                  backgroundColor: colors.card, 
+                  borderColor: colors.grey4, 
+                  borderWidth: 1,
+                  color: colors.foreground 
+                }}
+                placeholder="Enter a title for this conversation..."
+                placeholderTextColor={colors.grey2}
+                value={conversationTitle}
+                onChangeText={setConversationTitle}
+                maxLength={50}
               />
             </View>
           )}

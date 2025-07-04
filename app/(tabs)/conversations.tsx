@@ -39,7 +39,6 @@ export default function ConversationsTab() {
   };
 
   const handleConversationPress = (conversation: Conversation) => {
-    console.log('📱 Opening conversation:', conversation._id);
     selectConversation(conversation);
     setSelectedConversationId(conversation._id);
   };
