@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Alert,
-} from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { useConversations } from '../contexts/ConversationsContext';
@@ -62,12 +54,12 @@ export default function AddParticipantModal({
     try {
       setIsSearching(true);
       const results = await searchUsers(term.trim());
-      
+
       // Filter out users who are already participants
       const availableUsers = results.filter(
-        user => !currentParticipants.some(participant => participant._id === user._id)
+        (user) => !currentParticipants.some((participant) => participant._id === user._id)
       );
-      
+
       setSearchResults(availableUsers);
     } catch (error) {
       console.error('Search error:', error);
@@ -124,16 +116,12 @@ export default function AddParticipantModal({
       disabled={isAdding}>
       {/* Avatar */}
       <View className="mr-3">
-        <AvatarDisplay
-          user={item}
-          avatarNumber={item.avatar}
-          size="medium"
-        />
+        <AvatarDisplay user={item} avatarNumber={item.avatar} size="medium" />
       </View>
 
       {/* User Info */}
       <View className="flex-1">
-        <Text className="text-base font-semibold" style={{ color: colors.foreground }}>
+        <Text className="font-semibold text-base" style={{ color: colors.foreground }}>
           {getUserDisplayName(item)}
         </Text>
         <Text className="text-sm" style={{ color: colors.grey2 }}>
@@ -163,7 +151,7 @@ export default function AddParticipantModal({
           <View
             className="flex-row items-center justify-between border-b px-6 py-4"
             style={{ borderBottomColor: colors.grey4 }}>
-            <Text className="text-xl font-bold" style={{ color: colors.foreground }}>
+            <Text className="font-bold text-xl" style={{ color: colors.foreground }}>
               Add Participant
             </Text>
             <TouchableOpacity onPress={handleClose}>
@@ -223,7 +211,7 @@ export default function AddParticipantModal({
 
           {/* Loading overlay */}
           {isAdding && (
-            <View 
+            <View
               className="absolute bottom-0 left-0 right-0 top-0 items-center justify-center"
               style={{ backgroundColor: colors.background + '80' }}>
               <LoadingSpinner size={40} color={colors.primary} />

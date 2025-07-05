@@ -7,12 +7,7 @@ interface CustomTextProps extends TextProps {
 }
 
 const CustomText: React.FC<CustomTextProps> = ({ weight = 'regular', style, ...props }) => {
-  return (
-    <RNText
-      style={[TEXT_STYLES[weight], style]}
-      {...props}
-    />
-  );
+  return <RNText style={[TEXT_STYLES[weight], style]} {...props} />;
 };
 
 export default CustomText;

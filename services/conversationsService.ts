@@ -34,6 +34,9 @@ export interface Message {
   content: string;
   timestamp: string;
   type?: 'user' | 'system'; // Added type field
+  imageUrl?: string; // Image URL for image messages
+  fileName?: string; // Original filename
+  fileSize?: number; // File size in bytes
   createdAt: string;
   updatedAt: string;
 }
@@ -64,7 +67,7 @@ const convertBufferToId = (obj: any): string => {
   if (!obj) {
     return '';
   }
-  
+
   if (obj && obj.buffer && typeof obj.buffer === 'object') {
     try {
       const buffer = obj.buffer;
@@ -75,12 +78,12 @@ const convertBufferToId = (obj: any): string => {
       return String(obj);
     }
   }
-  
+
   // If it's already a string, return it
   if (typeof obj === 'string') {
     return obj;
   }
-  
+
   // Try to convert to string
   try {
     return String(obj);
@@ -102,16 +105,18 @@ const cleanConversationData = (conversation: any): Conversation => {
     // Map server's 'name' field to client's 'title' field
     title: conversation.name,
     participants:
-      conversation.participants?.map((p: any) => {
-        if (!p || !p._id) {
-          console.warn('⚠️ Found participant without _id, skipping');
-          return null;
-        }
-        return {
-          ...p,
-          _id: convertBufferToId(p._id),
-        };
-      }).filter(Boolean) || [],
+      conversation.participants
+        ?.map((p: any) => {
+          if (!p || !p._id) {
+            console.warn('⚠️ Found participant without _id, skipping');
+            return null;
+          }
+          return {
+            ...p,
+            _id: convertBufferToId(p._id),
+          };
+        })
+        .filter(Boolean) || [],
     lastMessage: conversation.lastMessage ? cleanMessageData(conversation.lastMessage) : undefined,
   };
 };
@@ -122,10 +127,12 @@ const cleanMessageData = (message: any): Message => {
     ...message,
     _id: convertBufferToId(message._id),
     conversationId: convertBufferToId(message.conversationId),
-    senderId: message.senderId ? {
-      ...message.senderId,
-      _id: convertBufferToId(message.senderId._id),
-    } : undefined,
+    senderId: message.senderId
+      ? {
+          ...message.senderId,
+          _id: convertBufferToId(message.senderId._id),
+        }
+      : undefined,
   };
 };
 
@@ -317,14 +324,16 @@ class ConversationsService {
       if (!response.ok) {
         throw new Error(`Failed to delete conversation: ${response.status}`);
       }
-
     } catch (error) {
       console.error('Delete conversation error:', error);
       throw error;
     }
   }
 
-  async updateConversation(conversationId: string, updateData: UpdateConversationDto): Promise<Conversation> {
+  async updateConversation(
+    conversationId: string,
+    updateData: UpdateConversationDto
+  ): Promise<Conversation> {
     try {
       const headers = await this.getAuthHeaders();
 
@@ -381,10 +390,13 @@ class ConversationsService {
     try {
       const headers = await this.getAuthHeaders();
 
-      const response = await fetch(`${API_BASE}/conversations/${conversationId}/participants/${participantId}`, {
-        method: 'DELETE',
-        headers,
-      });
+      const response = await fetch(
+        `${API_BASE}/conversations/${conversationId}/participants/${participantId}`,
+        {
+          method: 'DELETE',
+          headers,
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -397,6 +409,73 @@ class ConversationsService {
       return cleanedConversation;
     } catch (error) {
       console.error('Remove participant error:', error);
+      throw error;
+    }
+  }
+
+  async uploadImageMessage(
+    conversationId: string, 
+    imageUri: string, 
+    fileName: string, 
+    content: string = ''
+  ): Promise<Message> {
+    try {
+      const token = await AsyncStorage.getItem('hostelshifts_token');
+      
+      // Step 1: Upload file to S3 using existing working endpoint
+      const formData = new FormData();
+      formData.append('file', {
+        uri: imageUri,
+        type: 'image/jpeg',
+        name: fileName,
+      } as any);
+
+      const uploadResponse = await fetch(`${API_BASE}/files/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data',
+        },
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.status}`);
+      }
+
+      const uploadData = await uploadResponse.json();
+      
+      // Extract the file path and construct S3 URL
+      const filePath = uploadData.file.path;
+      const s3Url = `https://ixplor-bucket-test-01.s3.us-east-2.amazonaws.com/${filePath}`;
+
+      // Step 2: Send image message using the S3 URL
+      const messageResponse = await fetch(
+        `${API_BASE}/conversations/${conversationId}/messages/image`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            imageUrl: s3Url,
+            fileName: fileName,
+            fileSize: uploadData.file.size || 0,
+            content: content || '📷 Shared an image',
+          }),
+        }
+      );
+
+      if (!messageResponse.ok) {
+        throw new Error(`Failed to send image message: ${messageResponse.status}`);
+      }
+
+      const messageData = await messageResponse.json();
+      const cleanedMessage = cleanMessageData(messageData);
+      return cleanedMessage;
+    } catch (error) {
+      console.error('Upload image message error:', error);
       throw error;
     }
   }

@@ -47,11 +47,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await Promise.all([
-        refreshStatus(),
-        loadRecentEntries(),
-        loadWorkTimeSummaries(),
-      ]);
+      await Promise.all([refreshStatus(), loadRecentEntries(), loadWorkTimeSummaries()]);
     } catch (error) {
       console.error('Error refreshing data:', error);
     } finally {
@@ -73,29 +69,25 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
   };
 
   const handleClockOut = async () => {
-    Alert.alert(
-      'Clock Out',
-      'Are you sure you want to clock out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Clock Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              setClockActionLoading(true);
-              await clockOut();
-              Alert.alert('Success', 'You have been clocked out successfully');
-            } catch (error: any) {
-              console.error('Clock out error:', error);
-              Alert.alert('Error', error.message || 'Failed to clock out');
-            } finally {
-              setClockActionLoading(false);
-            }
-          },
+    Alert.alert('Clock Out', 'Are you sure you want to clock out?', [
+      { text: 'Cancel', style: 'cancel' },
+      {
+        text: 'Clock Out',
+        style: 'destructive',
+        onPress: async () => {
+          try {
+            setClockActionLoading(true);
+            await clockOut();
+            Alert.alert('Success', 'You have been clocked out successfully');
+          } catch (error: any) {
+            console.error('Clock out error:', error);
+            Alert.alert('Error', error.message || 'Failed to clock out');
+          } finally {
+            setClockActionLoading(false);
+          }
         },
-      ]
-    );
+      },
+    ]);
   };
 
   const getUserDisplayName = () => {
@@ -132,11 +124,14 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
         borderWidth: 1,
         borderColor: colors.grey5,
       }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+      <View
+        style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <View style={{ flex: 1 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
             <Ionicons
-              name={entry.status === TimeClockStatus.CLOCKED_IN ? 'play-circle' : 'checkmark-circle'}
+              name={
+                entry.status === TimeClockStatus.CLOCKED_IN ? 'play-circle' : 'checkmark-circle'
+              }
               size={20}
               color={entry.status === TimeClockStatus.CLOCKED_IN ? colors.primary : '#10B981'}
             />
@@ -151,7 +146,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
               {entry.status === TimeClockStatus.CLOCKED_IN ? 'In Progress' : 'Completed'}
             </Text>
           </View>
-          
+
           <Text
             style={{
               fontSize: 14,
@@ -161,7 +156,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
             }}>
             Started: {formatDate(entry.clockInTime)}
           </Text>
-          
+
           {entry.clockOutTime && (
             <Text
               style={{
@@ -173,7 +168,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
               Ended: {formatDate(entry.clockOutTime)}
             </Text>
           )}
-          
+
           {entry.notes && (
             <Text
               style={{
@@ -183,11 +178,11 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
                 fontStyle: 'italic',
                 ...TEXT_STYLES.regular,
               }}>
-              "{entry.notes}"
+              &quot;{entry.notes}&quot;
             </Text>
           )}
         </View>
-        
+
         <View style={{ alignItems: 'flex-end' }}>
           <Text
             style={{
@@ -196,7 +191,9 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
               color: colors.foreground,
               ...TEXT_STYLES.bold,
             }}>
-            {entry.status === TimeClockStatus.CLOCKED_IN ? currentSessionDisplay : entry.durationDisplay}
+            {entry.status === TimeClockStatus.CLOCKED_IN
+              ? currentSessionDisplay
+              : entry.durationDisplay}
           </Text>
           {entry.status === TimeClockStatus.CLOCKED_IN && (
             <Text
@@ -240,7 +237,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
           }}>
           <Ionicons name="arrow-back" size={24} color={colors.foreground} />
         </TouchableOpacity>
-        
+
         <Text
           style={{
             fontSize: 20,
@@ -250,7 +247,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
           }}>
           Time Clock
         </Text>
-        
+
         <TouchableOpacity
           onPress={onRefresh}
           style={{
@@ -273,10 +270,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
       <ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={{ padding: 20 }}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }>
-        
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {/* Welcome Section */}
         <View
           style={{
@@ -364,7 +358,12 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
               }}>
               Current Session
             </Text>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}>
               <View>
                 <Text
                   style={{
@@ -444,7 +443,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
               {todayWorkTime.durationDisplay}
             </Text>
           </View>
-          
+
           <View
             style={{
               flex: 1,
@@ -487,7 +486,7 @@ export default function TimeClockScreen({ onBack }: TimeClockScreenProps) {
             }}>
             Recent Activity
           </Text>
-          
+
           {recentEntries.length > 0 ? (
             recentEntries.map(renderTimeEntry)
           ) : (

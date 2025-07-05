@@ -45,7 +45,7 @@ export default function WeekDayHeader({
           // Fix timezone issue by parsing as UTC
           const dayNumber = new Date(date + 'T00:00:00.000Z').getUTCDate();
           const isSelected = selectedDayFilter === date;
-          
+
           // Check if this date is today
           const today = new Date().toISOString().split('T')[0];
           const isToday = date === today;
@@ -58,24 +58,20 @@ export default function WeekDayHeader({
                 width: 44, // Smaller button
                 height: 44, // Smaller button
                 backgroundColor: hasShifts ? colors.primary : colors.grey5,
-                opacity: selectedDayFilter === null 
-                  ? (hasShifts ? 1 : 0.5)
-                  : isSelected 
-                    ? 1 
-                    : 0.3,
-                borderWidth: isSelected ? 2 : (isToday ? 2 : 0), // Thinner yellow ring
-                borderColor: isSelected ? colors.background : (isToday ? '#fbbf24' : 'transparent'), // Yellow ring for today
+                opacity: selectedDayFilter === null ? (hasShifts ? 1 : 0.5) : isSelected ? 1 : 0.3,
+                borderWidth: isSelected ? 2 : isToday ? 2 : 0, // Thinner yellow ring
+                borderColor: isSelected ? colors.background : isToday ? '#fbbf24' : 'transparent', // Yellow ring for today
               }}
               onPress={() => hasShifts && onDayToggle(date)}
               disabled={!hasShifts}
               activeOpacity={0.7}>
               <Text
-                className="text-base font-bold" // Even larger font
+                className="font-bold text-base" // Even larger font
                 style={{ color: hasShifts ? 'white' : colors.grey3 }}>
                 {dayName}
               </Text>
               <Text
-                className="text-base font-semibold" // Even larger font
+                className="font-semibold text-base" // Even larger font
                 style={{ color: hasShifts ? 'white' : colors.grey3 }}>
                 {dayNumber}
               </Text>

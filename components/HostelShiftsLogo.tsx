@@ -6,10 +6,7 @@ interface HostelShiftsLogoProps {
   height?: number;
 }
 
-const HostelShiftsLogo: React.FC<HostelShiftsLogoProps> = ({ 
-  width = 160, 
-  height = 53 
-}) => {
+const HostelShiftsLogo: React.FC<HostelShiftsLogoProps> = ({ width = 160, height = 53 }) => {
   return (
     <Image
       source={require('../assets/hostel-shifts-grad.png')}

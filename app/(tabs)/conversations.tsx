@@ -7,6 +7,7 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConversations } from '../../contexts/ConversationsContext';
 import { useAuth } from '../../contexts/AuthContext';
@@ -68,17 +69,20 @@ export default function ConversationsTab() {
     return (
       <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
         {/* Fixed Header */}
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}>
           <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
             <View className="flex-row items-center justify-between px-6 pb-4">
               <View>
-                <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+                <Text
+                  className="font-bold text-2xl"
+                  style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
                   Messages
                 </Text>
                 <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
@@ -88,24 +92,72 @@ export default function ConversationsTab() {
             </View>
           </SafeAreaView>
         </View>
-        
+
         <View
           className="mx-4 flex-1 items-center justify-center rounded p-6"
-          style={{ backgroundColor: colors.card + '50', marginTop: 160 }}>
-          <View className="rounded p-6" style={{ backgroundColor: colors.destructive + '20' }}>
-            <Ionicons name="alert-circle" size={48} color={colors.destructive} />
+          style={{
+            marginTop: 160,
+            borderRadius: 16,
+            backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+            borderWidth: 1,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 3,
+            overflow: 'hidden',
+            position: 'relative',
+          }}>
+          {/* Gloss overlay */}
+          <LinearGradient
+            colors={
+              isDark
+                ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+            }
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '60%',
+              borderRadius: 16,
+              opacity: 0.8,
+            }}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
+          />
+          {/* Lens effect */}
+          <View
+            style={{
+              position: 'absolute',
+              top: 2,
+              left: 2,
+              right: 2,
+              bottom: 2,
+              borderRadius: 14,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+              opacity: 0.3,
+            }}
+          />
+          {/* Content */}
+          <View style={{ position: 'relative', zIndex: 10, alignItems: 'center' }}>
+            <View className="rounded p-6" style={{ backgroundColor: colors.destructive + '20' }}>
+              <Ionicons name="alert-circle" size={48} color={colors.destructive} />
+            </View>
+            <Text
+              className="mt-6 px-4 text-center font-semibold text-lg"
+              style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
+              {error}
+            </Text>
+            <TouchableOpacity
+              className="mt-6 rounded px-8 py-4"
+              style={{ backgroundColor: colors.primary }}
+              onPress={onRefresh}>
+              <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>Try Again</Text>
+            </TouchableOpacity>
           </View>
-          <Text
-            className="mt-6 px-4 text-center text-lg font-semibold"
-            style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
-            {error}
-          </Text>
-          <TouchableOpacity
-            className="mt-6 rounded px-8 py-4"
-            style={{ backgroundColor: colors.primary }}
-            onPress={onRefresh}>
-            <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>Try Again</Text>
-          </TouchableOpacity>
         </View>
       </View>
     );
@@ -115,17 +167,20 @@ export default function ConversationsTab() {
     <>
       <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
         {/* Fixed Header */}
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}>
           <SafeAreaView edges={['top']} style={{ backgroundColor: colors.background }}>
             <View className="flex-row items-center justify-between px-6 pb-4">
               <View>
-                <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+                <Text
+                  className="font-bold text-2xl"
+                  style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
                   Messages
                 </Text>
                 <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
@@ -162,24 +217,75 @@ export default function ConversationsTab() {
           ) : !isLoading ? (
             <View
               className="mx-4 flex-1 items-center justify-center rounded p-6"
-              style={{ backgroundColor: colors.card + '50' }}>
-              <View className="rounded p-6" style={{ backgroundColor: colors.grey5 }}>
-                <Ionicons name="chatbubbles-outline" size={64} color={colors.grey2} />
+              style={{
+                borderRadius: 16,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+                borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+                borderWidth: 1,
+                shadowColor: '#000',
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.1,
+                shadowRadius: 4,
+                elevation: 3,
+                overflow: 'hidden',
+                position: 'relative',
+              }}>
+              {/* Gloss overlay */}
+              <LinearGradient
+                colors={
+                  isDark
+                    ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                    : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '60%',
+                  borderRadius: 16,
+                  opacity: 0.8,
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+              />
+              {/* Lens effect */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: 2,
+                  right: 2,
+                  bottom: 2,
+                  borderRadius: 14,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+                  opacity: 0.3,
+                }}
+              />
+              {/* Content */}
+              <View style={{ position: 'relative', zIndex: 10, alignItems: 'center' }}>
+                <View className="rounded p-6" style={{ backgroundColor: colors.grey5 }}>
+                  <Ionicons name="chatbubbles-outline" size={64} color={colors.grey2} />
+                </View>
+                <Text
+                  className="mt-6 text-center font-semibold text-lg"
+                  style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
+                  No Conversations Yet
+                </Text>
+                <Text
+                  className="mt-2 px-4 text-center"
+                  style={{ color: colors.grey2, ...TEXT_STYLES.regular }}>
+                  Start a conversation with your team members to see them here.
+                </Text>
+                <TouchableOpacity
+                  className="mt-6 rounded px-8 py-4"
+                  style={{ backgroundColor: colors.primary }}
+                  onPress={handleNewConversation}>
+                  <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>
+                    Start Conversation
+                  </Text>
+                </TouchableOpacity>
               </View>
-              <Text
-                className="mt-6 text-center text-lg font-semibold"
-                style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
-                No Conversations Yet
-              </Text>
-              <Text className="mt-2 px-4 text-center" style={{ color: colors.grey2, ...TEXT_STYLES.regular }}>
-                Start a conversation with your team members to see them here.
-              </Text>
-              <TouchableOpacity
-                className="mt-6 rounded px-8 py-4"
-                style={{ backgroundColor: colors.primary }}
-                onPress={handleNewConversation}>
-                <Text style={{ ...TEXT_STYLES.semibold, color: 'white' }}>Start Conversation</Text>
-              </TouchableOpacity>
             </View>
           ) : null}
         </ScrollView>
@@ -191,7 +297,7 @@ export default function ConversationsTab() {
           onConversationCreated={handleConversationCreated}
         />
       </View>
-      
+
       {/* Full Screen Loading Overlay */}
       {isLoading && conversations.length === 0 && (
         <LoadingSpinner size={100} color={colors.primary} />

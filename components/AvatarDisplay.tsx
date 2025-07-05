@@ -63,9 +63,9 @@ export default function AvatarDisplay({
 
   return (
     <Component
-      className={`${sizeClasses[size]} rounded-full overflow-hidden items-center justify-center ${className}`}
-      style={{ 
-        backgroundColor: imageError ? avatarSource.fallbackColor : 'transparent'
+      className={`${sizeClasses[size]} items-center justify-center overflow-hidden rounded-full ${className}`}
+      style={{
+        backgroundColor: imageError ? avatarSource.fallbackColor : 'transparent',
       }}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}>
@@ -84,7 +84,7 @@ export default function AvatarDisplay({
         />
       ) : (
         // Fallback to colored circle with text
-        <View 
+        <View
           className={`${sizeClasses[size]} items-center justify-center rounded-full`}
           style={{ backgroundColor: avatarSource.fallbackColor }}>
           <Text className={`${textSizeClasses[size]} font-bold`} style={{ color: textColor }}>

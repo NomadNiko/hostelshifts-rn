@@ -155,11 +155,11 @@ export const getCurrentWeekStartDate = (): string => {
   const now = new Date();
   const dayOfWeek = now.getDay(); // 0 = Sunday, 1 = Monday, etc.
   const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // If Sunday, go back 6 days, otherwise go to Monday
-  
+
   const monday = new Date(now);
   monday.setDate(now.getDate() + daysToMonday);
   monday.setHours(0, 0, 0, 0);
-  
+
   return monday.toISOString().split('T')[0];
 };
 
@@ -179,7 +179,7 @@ export const getWeekDatesFromMonday = (mondayDateString: string): string[] => {
       date.setUTCDate(monday.getUTCDate() + i);
       weekDates.push(date.toISOString().split('T')[0]);
     }
-    
+
     return weekDates;
   } catch {
     return [];
@@ -195,8 +195,8 @@ export const addWeeks = (dateString: string, weeks: number): string => {
     if (isNaN(date.getTime())) {
       return dateString;
     }
-    
-    date.setUTCDate(date.getUTCDate() + (weeks * 7));
+
+    date.setUTCDate(date.getUTCDate() + weeks * 7);
     return date.toISOString().split('T')[0];
   } catch {
     return dateString;
@@ -211,18 +211,18 @@ export const formatWeekRange = (mondayDateString: string): string => {
     const monday = new Date(mondayDateString + 'T00:00:00.000Z');
     const sunday = new Date(monday);
     sunday.setUTCDate(monday.getUTCDate() + 6);
-    
-    const mondayFormatted = monday.toLocaleDateString('en-US', { 
-      month: 'short', 
+
+    const mondayFormatted = monday.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      timeZone: 'UTC'
+      timeZone: 'UTC',
     });
-    const sundayFormatted = sunday.toLocaleDateString('en-US', { 
-      month: 'short', 
+    const sundayFormatted = sunday.toLocaleDateString('en-US', {
+      month: 'short',
       day: 'numeric',
-      timeZone: 'UTC'
+      timeZone: 'UTC',
     });
-    
+
     return `${mondayFormatted} - ${sundayFormatted}`;
   } catch {
     return 'Invalid Week';

@@ -74,10 +74,7 @@ class TimeClockService {
     };
   }
 
-  private async handleAuthenticatedRequest<T>(
-    url: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  private async handleAuthenticatedRequest<T>(url: string, options: RequestInit = {}): Promise<T> {
     try {
       const headers = await this.getAuthHeaders();
       const response = await fetch(url, {
@@ -166,7 +163,7 @@ class TimeClockService {
    */
   async getMyTimeEntries(params: TimeClockQueryParams = {}): Promise<TimeClockEntriesResponse> {
     const queryParams = new URLSearchParams();
-    
+
     if (params.startDate) queryParams.append('startDate', params.startDate);
     if (params.endDate) queryParams.append('endDate', params.endDate);
     if (params.page) queryParams.append('page', params.page.toString());
@@ -184,13 +181,10 @@ class TimeClockService {
    */
   async getTimeEntry(entryId: string): Promise<TimeClockEntry> {
     const url = API_ENDPOINTS.timeClock.entry.replace(':id', entryId);
-    
-    return this.handleAuthenticatedRequest<TimeClockEntry>(
-      `${API_BASE}${url}`,
-      {
-        method: 'GET',
-      }
-    );
+
+    return this.handleAuthenticatedRequest<TimeClockEntry>(`${API_BASE}${url}`, {
+      method: 'GET',
+    });
   }
 
   /**
@@ -228,7 +222,11 @@ class TimeClockService {
   /**
    * Get today's total work time
    */
-  async getTodayWorkTime(): Promise<{ totalMinutes: number; totalHours: number; durationDisplay: string }> {
+  async getTodayWorkTime(): Promise<{
+    totalMinutes: number;
+    totalHours: number;
+    durationDisplay: string;
+  }> {
     try {
       const today = new Date().toISOString().split('T')[0];
       const entries = await this.getMyTimeEntries({
@@ -265,7 +263,11 @@ class TimeClockService {
   /**
    * Get this week's total work time
    */
-  async getWeekWorkTime(): Promise<{ totalMinutes: number; totalHours: number; durationDisplay: string }> {
+  async getWeekWorkTime(): Promise<{
+    totalMinutes: number;
+    totalHours: number;
+    durationDisplay: string;
+  }> {
     try {
       // Get start of week (Monday)
       const now = new Date();

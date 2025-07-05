@@ -6,6 +6,7 @@ import { COLORS } from '../../theme/colors';
 import { formatMessageTime } from '../../utils/dateUtils';
 import { getUserDisplayName } from '../../utils/userUtils';
 import AvatarDisplay from '../AvatarDisplay';
+import ImagePreview from './ImagePreview';
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({
   message,
@@ -29,7 +30,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
         {showTimeGap && (
           <View className="my-6 items-center">
             <View className="rounded px-4 py-2" style={{ backgroundColor: colors.grey5 }}>
-              <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
+              <Text className="font-medium text-xs" style={{ color: colors.grey2 }}>
                 {timeText}
               </Text>
             </View>
@@ -38,12 +39,8 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
         {/* System message */}
         <View className="my-4 items-center">
-          <View
-            className="rounded-full px-4 py-2"
-            style={{ backgroundColor: colors.grey5 }}>
-            <Text
-              className="text-center text-sm font-medium"
-              style={{ color: colors.grey2 }}>
+          <View className="rounded-full px-4 py-2" style={{ backgroundColor: colors.grey5 }}>
+            <Text className="text-center font-medium text-sm" style={{ color: colors.grey2 }}>
               {message.content}
             </Text>
           </View>
@@ -58,7 +55,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
       {showTimeGap && (
         <View className="my-6 items-center">
           <View className="rounded px-4 py-2" style={{ backgroundColor: colors.grey5 }}>
-            <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
+            <Text className="font-medium text-xs" style={{ color: colors.grey2 }}>
               {timeText}
             </Text>
           </View>
@@ -73,7 +70,7 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
           <View
             className="mb-2 ml-4 self-start rounded px-3 py-1"
             style={{ backgroundColor: colors.grey5 }}>
-            <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
+            <Text className="font-medium text-xs" style={{ color: colors.grey2 }}>
               {senderName}
             </Text>
           </View>
@@ -105,14 +102,29 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
               borderWidth: isOwnMessage ? 0 : 1,
               borderColor: colors.grey5,
             }}>
-            <Text
-              className="text-base leading-6"
-              style={{
-                color: isOwnMessage ? 'white' : colors.foreground,
-                fontWeight: '400',
-              }}>
-              {message.content}
-            </Text>
+            {/* Image preview if message has an image */}
+            {message.imageUrl && (
+              <View className="mb-3">
+                <ImagePreview
+                  imageUrl={message.imageUrl}
+                  fileName={message.fileName}
+                  isOwnMessage={isOwnMessage}
+                  isDark={isDark}
+                />
+              </View>
+            )}
+
+            {/* Text content */}
+            {message.content && (
+              <Text
+                className="text-base leading-6"
+                style={{
+                  color: isOwnMessage ? 'white' : colors.foreground,
+                  fontWeight: '400',
+                }}>
+                {message.content}
+              </Text>
+            )}
 
             {/* Message status and timestamp inline */}
             <View

@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useSchedules } from '../../contexts/SchedulesContext';
@@ -18,14 +19,14 @@ import ThemeToggle from '../../components/ThemeToggle';
 import WeekDayHeader from '../../components/WeekDayHeader';
 import DayScheduleCard from '../../components/DayScheduleCard';
 import LoadingSpinner from '../../components/LoadingSpinner';
-import { 
-  getWeekDatesFromStartDate, 
-  formatDate, 
-  getDayName, 
+import {
+  getWeekDatesFromStartDate,
+  formatDate,
+  getDayName,
   getCurrentWeekStartDate,
   getWeekDatesFromMonday,
   addWeeks,
-  formatWeekRange
+  formatWeekRange,
 } from '../../utils/dateUtils';
 
 export default function SchedulesScreen() {
@@ -117,32 +118,32 @@ export default function SchedulesScreen() {
 
   // Navigation functions
   const goToPreviousWeek = () => {
-    setSelectedWeekStart(prev => addWeeks(prev, -1));
+    setSelectedWeekStart((prev) => addWeeks(prev, -1));
     setSelectedDayFilter(null); // Clear day filter when changing weeks
   };
 
   const goToNextWeek = () => {
-    setSelectedWeekStart(prev => addWeeks(prev, 1));
+    setSelectedWeekStart((prev) => addWeeks(prev, 1));
     setSelectedDayFilter(null); // Clear day filter when changing weeks
   };
 
   // Find schedule for the selected week
   const getScheduleForWeek = (weekStartDate: string) => {
-    return schedules.find(schedule => {
+    return schedules.find((schedule) => {
       const scheduleStart = schedule.startDate.split('T')[0];
       return scheduleStart === weekStartDate;
     });
   };
 
   const weekSchedule = getScheduleForWeek(selectedWeekStart);
-  
+
   // Load shifts when week schedule changes
   React.useEffect(() => {
     if (weekSchedule && weekSchedule.id !== currentSchedule?.id) {
       setCurrentSchedule(weekSchedule);
     }
   }, [weekSchedule, currentSchedule, setCurrentSchedule]);
-  
+
   // Get week dates for the selected week
   const getCurrentWeekDates = () => {
     return getWeekDatesFromMonday(selectedWeekStart);
@@ -159,11 +160,11 @@ export default function SchedulesScreen() {
   };
 
   const weekDates = getCurrentWeekDates();
-  
+
   // Get shifts based on the selected week's schedule
   const getShiftsForSelectedWeek = (date: string) => {
     if (!weekSchedule) return [];
-    
+
     // Use the scheduleShifts from context (they should be loaded for the current weekSchedule)
     let shifts = scheduleShifts.filter((shift) => {
       const shiftDate = shift.date ? shift.date.split('T')[0] : '';
@@ -174,15 +175,20 @@ export default function SchedulesScreen() {
     if (scheduleView === 'my') {
       console.log('DEBUG: Current user ID:', user?._id);
       console.log('DEBUG: Sample shift user object:', JSON.stringify(shifts[0]?.user, null, 2));
-      
+
       shifts = shifts.filter((shift) => {
         // Try different possible user ID fields
         const userId = shift.user?._id || shift.user?.id;
         const match = shift.user && userId === user?._id;
-        console.log('DEBUG: Shift user:', { _id: shift.user?._id, id: shift.user?.id, firstName: shift.user?.firstName }, 'Match:', match);
+        console.log(
+          'DEBUG: Shift user:',
+          { _id: shift.user?._id, id: shift.user?.id, firstName: shift.user?.firstName },
+          'Match:',
+          match
+        );
         return match;
       });
-      
+
       console.log('DEBUG: Filtered shifts:', shifts.length);
     }
 
@@ -213,7 +219,7 @@ export default function SchedulesScreen() {
         <SafeAreaView edges={['top']}>
           <View className="flex-row items-center justify-between px-6 pb-4">
             <View>
-              <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
+              <Text className="font-bold text-2xl" style={{ color: colors.foreground }}>
                 Schedules
               </Text>
               <Text className="text-sm" style={{ color: colors.grey }}>
@@ -225,7 +231,7 @@ export default function SchedulesScreen() {
         <View className="flex-1 items-center justify-center p-6">
           <Ionicons name="alert-circle" size={48} color={colors.destructive} />
           <Text
-            className="mt-4 text-center text-lg font-semibold"
+            className="mt-4 text-center font-semibold text-lg"
             style={{ color: colors.foreground }}>
             {error}
           </Text>
@@ -246,7 +252,7 @@ export default function SchedulesScreen() {
       <SafeAreaView edges={['top']}>
         <View className="flex-row items-center justify-between px-6 pb-4">
           <View>
-            <Text className="text-2xl font-bold" style={{ color: colors.foreground }}>
+            <Text className="font-bold text-2xl" style={{ color: colors.foreground }}>
               Schedules
             </Text>
             <Text className="text-sm" style={{ color: colors.grey }}>
@@ -262,52 +268,111 @@ export default function SchedulesScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}>
         {/* Week Selector */}
         <View className="px-6 pb-4">
-          <Text className="mb-3 text-lg font-semibold" style={{ color: colors.foreground }}>
+          <Text className="mb-3 font-semibold text-lg" style={{ color: colors.foreground }}>
             Week View
           </Text>
 
           {/* Week Navigation */}
-          <View className="flex-row items-center justify-between rounded-lg border p-3" 
-                style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
-            <TouchableOpacity
-              className="rounded p-2"
-              style={{ backgroundColor: colors.background }}
-              onPress={goToPreviousWeek}>
-              <Ionicons name="chevron-back" size={24} color={colors.foreground} />
-            </TouchableOpacity>
-            
-            <View className="flex-1 items-center">
-              <Text className="text-lg font-bold" style={{ color: colors.foreground }}>
-                {formatWeekRange(selectedWeekStart)}
-              </Text>
-              {weekSchedule ? (
-                <View className="mt-1 flex-row items-center">
-                  <View
-                    className="mr-2 h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor:
-                        weekSchedule.status.toLowerCase() === 'published'
-                          ? colors.success
-                          : colors.warning,
-                    }}
-                  />
-                  <Text className="text-xs font-medium" style={{ color: colors.grey2 }}>
-                    {weekSchedule.status.toUpperCase()} • {weekSchedule.name}
-                  </Text>
-                </View>
-              ) : (
-                <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
-                  No schedule posted for this week
+          <View
+            style={{
+              borderRadius: 12,
+              padding: 12,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+              borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+              borderWidth: 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              overflow: 'hidden',
+              position: 'relative',
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+            {/* Gloss overlay */}
+            <LinearGradient
+              colors={
+                isDark
+                  ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                  : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+              }
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '60%',
+                borderRadius: 12,
+                opacity: 0.8,
+              }}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+            />
+            {/* Lens effect */}
+            <View
+              style={{
+                position: 'absolute',
+                top: 2,
+                left: 2,
+                right: 2,
+                bottom: 2,
+                borderRadius: 10,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+                opacity: 0.3,
+              }}
+            />
+            {/* Content */}
+            <View
+              style={{
+                position: 'relative',
+                zIndex: 10,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flex: 1,
+              }}>
+              <TouchableOpacity
+                className="rounded p-2"
+                style={{ backgroundColor: colors.background }}
+                onPress={goToPreviousWeek}>
+                <Ionicons name="chevron-back" size={24} color={colors.foreground} />
+              </TouchableOpacity>
+
+              <View className="flex-1 items-center">
+                <Text className="font-bold text-lg" style={{ color: colors.foreground }}>
+                  {formatWeekRange(selectedWeekStart)}
                 </Text>
-              )}
+                {weekSchedule ? (
+                  <View className="mt-1 flex-row items-center">
+                    <View
+                      className="mr-2 h-2 w-2 rounded-full"
+                      style={{
+                        backgroundColor:
+                          weekSchedule.status.toLowerCase() === 'published'
+                            ? colors.success
+                            : colors.warning,
+                      }}
+                    />
+                    <Text className="font-medium text-xs" style={{ color: colors.grey2 }}>
+                      {weekSchedule.status.toUpperCase()} • {weekSchedule.name}
+                    </Text>
+                  </View>
+                ) : (
+                  <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
+                    No schedule posted for this week
+                  </Text>
+                )}
+              </View>
+
+              <TouchableOpacity
+                className="rounded p-2"
+                style={{ backgroundColor: colors.background }}
+                onPress={goToNextWeek}>
+                <Ionicons name="chevron-forward" size={24} color={colors.foreground} />
+              </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity
-              className="rounded p-2"
-              style={{ backgroundColor: colors.background }}
-              onPress={goToNextWeek}>
-              <Ionicons name="chevron-forward" size={24} color={colors.foreground} />
-            </TouchableOpacity>
           </View>
 
           {/* Publish Button */}
@@ -324,36 +389,84 @@ export default function SchedulesScreen() {
         {/* Schedule View Toggle */}
         <View className="px-6 py-4">
           <View
-            className="flex-row rounded-lg p-1"
-            style={{ backgroundColor: colors.grey5 }}>
-            <TouchableOpacity
-              className="flex-1 rounded-md py-2"
+            style={{
+              borderRadius: 12,
+              padding: 4,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+              borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+              borderWidth: 1,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.1,
+              shadowRadius: 4,
+              elevation: 3,
+              overflow: 'hidden',
+              position: 'relative',
+              flexDirection: 'row',
+            }}>
+            {/* Gloss overlay */}
+            <LinearGradient
+              colors={
+                isDark
+                  ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                  : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+              }
               style={{
-                backgroundColor: scheduleView === 'my' ? colors.primary : 'transparent',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '60%',
+                borderRadius: 12,
+                opacity: 0.8,
               }}
-              onPress={() => setScheduleView('my')}>
-              <Text
-                className="text-center font-semibold"
-                style={{
-                  color: scheduleView === 'my' ? 'white' : colors.grey2,
-                }}>
-                My Schedule
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              className="flex-1 rounded-md py-2"
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+            />
+            {/* Lens effect */}
+            <View
               style={{
-                backgroundColor: scheduleView === 'full' ? colors.primary : 'transparent',
+                position: 'absolute',
+                top: 2,
+                left: 2,
+                right: 2,
+                bottom: 2,
+                borderRadius: 10,
+                backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+                opacity: 0.3,
               }}
-              onPress={() => setScheduleView('full')}>
-              <Text
-                className="text-center font-semibold"
+            />
+            {/* Content */}
+            <View style={{ position: 'relative', zIndex: 10, flexDirection: 'row', flex: 1 }}>
+              <TouchableOpacity
+                className="flex-1 rounded-md py-2"
                 style={{
-                  color: scheduleView === 'full' ? 'white' : colors.grey2,
-                }}>
-                Full Schedule
-              </Text>
-            </TouchableOpacity>
+                  backgroundColor: scheduleView === 'my' ? colors.primary : 'transparent',
+                }}
+                onPress={() => setScheduleView('my')}>
+                <Text
+                  className="text-center font-semibold"
+                  style={{
+                    color: scheduleView === 'my' ? 'white' : colors.grey2,
+                  }}>
+                  My Schedule
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-1 rounded-md py-2"
+                style={{
+                  backgroundColor: scheduleView === 'full' ? colors.primary : 'transparent',
+                }}
+                onPress={() => setScheduleView('full')}>
+                <Text
+                  className="text-center font-semibold"
+                  style={{
+                    color: scheduleView === 'full' ? 'white' : colors.grey2,
+                  }}>
+                  Full Schedule
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
 
@@ -362,51 +475,88 @@ export default function SchedulesScreen() {
           <>
             {/* Day Navigation Header */}
             <View
-              className="border-b px-6 py-4"
+              className="px-6 py-4"
               style={{
-                backgroundColor: colors.background,
-                borderBottomColor: colors.grey4,
-                shadowColor: isDark ? '#000' : '#000',
+                backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+                borderBottomColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+                borderBottomWidth: 1,
+                shadowColor: '#000',
                 shadowOffset: { width: 0, height: 2 },
-                shadowOpacity: isDark ? 0.3 : 0.1,
+                shadowOpacity: 0.1,
                 shadowRadius: 4,
-                elevation: 4,
+                elevation: 3,
+                overflow: 'hidden',
+                position: 'relative',
               }}>
-              <View className="mb-3">
-                <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>
-                  {selectedDayFilter
-                    ? `${getDayName(selectedDayFilter)} ${scheduleView === 'my' ? 'My' : 'Full'} Schedule`
-                    : `${scheduleView === 'my' ? 'My' : 'Full'} Week Schedule`}
-                </Text>
-                {selectedDayFilter && (
-                  <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
-                    Tap the green day button again to show all days
-                  </Text>
-                )}
-              </View>
-              <WeekDayHeader
-                weekDates={weekDates}
-                getShiftsForDate={getShiftsForSelectedWeek}
-                selectedDayFilter={selectedDayFilter}
-                onDayToggle={toggleDayFilter}
-                colors={colors}
+              {/* Gloss overlay */}
+              <LinearGradient
+                colors={
+                  isDark
+                    ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                    : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+                }
+                style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: '60%',
+                  opacity: 0.8,
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
               />
+              {/* Lens effect */}
+              <View
+                style={{
+                  position: 'absolute',
+                  top: 2,
+                  left: 2,
+                  right: 2,
+                  bottom: 2,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+                  opacity: 0.3,
+                }}
+              />
+              {/* Content */}
+              <View style={{ position: 'relative', zIndex: 10 }}>
+                <View className="mb-3">
+                  <Text className="font-semibold text-lg" style={{ color: colors.foreground }}>
+                    {selectedDayFilter
+                      ? `${getDayName(selectedDayFilter)} ${scheduleView === 'my' ? 'My' : 'Full'} Schedule`
+                      : `${scheduleView === 'my' ? 'My' : 'Full'} Week Schedule`}
+                  </Text>
+                  {selectedDayFilter && (
+                    <Text className="mt-1 text-sm" style={{ color: colors.grey2 }}>
+                      Tap the green day button again to show all days
+                    </Text>
+                  )}
+                </View>
+                <WeekDayHeader
+                  weekDates={weekDates}
+                  getShiftsForDate={getShiftsForSelectedWeek}
+                  selectedDayFilter={selectedDayFilter}
+                  onDayToggle={toggleDayFilter}
+                  colors={colors}
+                />
+              </View>
             </View>
 
             <View className="px-6 pb-6 pt-4">
               {/* Weekly View */}
               {filteredDaysWithShifts.length > 0 ? (
-                <View className="space-y-3">
+                <View>
                   {filteredDaysWithShifts.map((date) => {
                     const dayShifts = getShiftsForSelectedWeek(date);
                     return (
-                      <DayScheduleCard
-                        key={date}
-                        date={date}
-                        shifts={dayShifts}
-                        colors={colors}
-                        getColorForIndex={getColorForIndex}
-                      />
+                      <View key={date} style={{ marginBottom: 6 }}>
+                        <DayScheduleCard
+                          date={date}
+                          shifts={dayShifts}
+                          colors={colors}
+                          getColorForIndex={getColorForIndex}
+                        />
+                      </View>
                     );
                   })}
                 </View>
@@ -414,7 +564,7 @@ export default function SchedulesScreen() {
                 <View className="items-center justify-center p-6" style={{ marginTop: 50 }}>
                   <ActivityIndicator size="large" color={colors.primary} />
                   <Text
-                    className="mt-4 text-center text-lg font-semibold"
+                    className="mt-4 text-center font-semibold text-lg"
                     style={{ color: colors.foreground }}>
                     Schedules Loading...
                   </Text>
@@ -432,7 +582,7 @@ export default function SchedulesScreen() {
           <View className="flex-1 items-center justify-center p-6">
             <Ionicons name="calendar-outline" size={64} color={colors.grey2} />
             <Text
-              className="mt-4 text-center text-lg font-semibold"
+              className="mt-4 text-center font-semibold text-lg"
               style={{ color: colors.foreground }}>
               No Schedules Found
             </Text>

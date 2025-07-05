@@ -1,13 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  Modal,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Alert,
-} from 'react-native';
+import { View, Text, Modal, TouchableOpacity, TextInput, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
 import { useConversations } from '../contexts/ConversationsContext';
@@ -92,12 +84,12 @@ export default function NewConversationModal({
       setIsCreating(true);
       const participantIds = selectedUsers.map((user) => user._id);
       const conversationData: any = { participantIds };
-      
+
       // Add title if provided
       if (conversationTitle.trim()) {
         conversationData.title = conversationTitle.trim();
       }
-      
+
       const conversation = await createConversation(conversationData);
 
       onConversationCreated(conversation);
@@ -147,16 +139,12 @@ export default function NewConversationModal({
         onPress={() => toggleUserSelection(item)}>
         {/* Avatar */}
         <View className="mr-3">
-          <AvatarDisplay
-            user={item}
-            avatarNumber={item.avatar}
-            size="medium"
-          />
+          <AvatarDisplay user={item} avatarNumber={item.avatar} size="medium" />
         </View>
 
         {/* User Info */}
         <View className="flex-1">
-          <Text className="text-base font-semibold" style={{ color: colors.foreground }}>
+          <Text className="font-semibold text-base" style={{ color: colors.foreground }}>
             {getUserDisplayName(item)}
           </Text>
           <Text className="text-sm" style={{ color: colors.grey2 }}>
@@ -180,13 +168,9 @@ export default function NewConversationModal({
       className="mb-2 mr-2 flex-row items-center rounded px-3 py-2"
       style={{ backgroundColor: colors.primary + '20' }}>
       <View className="mr-2">
-        <AvatarDisplay
-          user={item}
-          avatarNumber={item.avatar}
-          size="small"
-        />
+        <AvatarDisplay user={item} avatarNumber={item.avatar} size="small" />
       </View>
-      <Text className="mr-2 text-sm font-medium" style={{ color: colors.primary }}>
+      <Text className="mr-2 font-medium text-sm" style={{ color: colors.primary }}>
         {getUserDisplayName(item)}
       </Text>
       <TouchableOpacity onPress={() => toggleUserSelection(item)}>
@@ -207,7 +191,7 @@ export default function NewConversationModal({
           <View
             className="flex-row items-center justify-between border-b px-6 py-4"
             style={{ borderBottomColor: colors.grey4 }}>
-            <Text className="text-xl font-bold" style={{ color: colors.foreground }}>
+            <Text className="font-bold text-xl" style={{ color: colors.foreground }}>
               New Conversation
             </Text>
             <TouchableOpacity onPress={handleClose}>
@@ -238,7 +222,7 @@ export default function NewConversationModal({
           {/* Selected Users */}
           {selectedUsers.length > 0 && (
             <View className="px-6 pb-4">
-              <Text className="mb-2 text-sm font-medium" style={{ color: colors.grey2 }}>
+              <Text className="mb-2 font-medium text-sm" style={{ color: colors.grey2 }}>
                 Selected ({selectedUsers.length})
               </Text>
               <FlatList
@@ -254,16 +238,16 @@ export default function NewConversationModal({
           {/* Conversation Title */}
           {selectedUsers.length > 0 && (
             <View className="px-6 pb-4">
-              <Text className="mb-2 text-sm font-medium" style={{ color: colors.grey2 }}>
+              <Text className="mb-2 font-medium text-sm" style={{ color: colors.grey2 }}>
                 Conversation Title (Optional)
               </Text>
               <TextInput
                 className="rounded px-4 py-3 text-base"
-                style={{ 
-                  backgroundColor: colors.card, 
-                  borderColor: colors.grey4, 
+                style={{
+                  backgroundColor: colors.card,
+                  borderColor: colors.grey4,
                   borderWidth: 1,
-                  color: colors.foreground 
+                  color: colors.foreground,
                 }}
                 placeholder="Enter a title for this conversation..."
                 placeholderTextColor={colors.grey2}

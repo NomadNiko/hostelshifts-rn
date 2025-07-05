@@ -19,7 +19,7 @@ export default function ProfileTab() {
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
   const [hasAnimated, setHasAnimated] = useState(false);
-  
+
   // Animation values - use useRef to persist across renders
   const slideAnim = React.useRef(new Animated.Value(0)).current;
   const opacityAnim = React.useRef(new Animated.Value(0)).current;
@@ -78,7 +78,9 @@ export default function ProfileTab() {
       <SafeAreaView edges={['top']}>
         <View className="flex-row items-center justify-between px-6 pb-4">
           <View>
-            <Text className="text-2xl font-bold" style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
+            <Text
+              className="font-bold text-2xl"
+              style={{ color: colors.foreground, ...TEXT_STYLES.bold }}>
               Profile
             </Text>
             <Text className="text-sm" style={{ color: colors.grey, ...TEXT_STYLES.regular }}>
@@ -98,9 +100,9 @@ export default function ProfileTab() {
                 <HostelShiftsLogo width={280} height={93} />
               </View>
             ) : (
-              <Animated.View 
+              <Animated.View
                 className="items-center px-6 py-6"
-                style={{ 
+                style={{
                   opacity: opacityAnim,
                   transform: [
                     {
@@ -134,7 +136,7 @@ export default function ProfileTab() {
                   className={isUpdatingAvatar ? 'opacity-50' : ''}
                 />
                 <View className="mt-3 flex-row items-center">
-                  <Text className="text-base font-medium" style={{ color: colors.primary }}>
+                  <Text className="font-medium text-base" style={{ color: colors.primary }}>
                     Change Avatar
                   </Text>
                   <Ionicons
@@ -148,53 +150,118 @@ export default function ProfileTab() {
             </View>
 
             {/* User Info Section */}
-            <View className="px-6 mt-8">
+            <View className="mt-8 px-6">
               <View
-                className="rounded-lg border p-4"
-                style={{ backgroundColor: colors.card, borderColor: colors.grey4 }}>
-                <Text className="mb-4 text-lg font-semibold" style={{ color: colors.foreground }}>
-                  Account Information
-                </Text>
+                style={{
+                  borderRadius: 12,
+                  padding: 16,
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.20)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.4)',
+                  borderWidth: 1,
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.1,
+                  shadowRadius: 4,
+                  elevation: 3,
+                  overflow: 'hidden',
+                  position: 'relative',
+                }}>
+                {/* Gloss overlay */}
+                <LinearGradient
+                  colors={
+                    isDark
+                      ? ['rgba(255,255,255,0.15)', 'rgba(255,255,255,0.05)', 'transparent']
+                      : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+                  }
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '60%',
+                    borderRadius: 12,
+                    opacity: 0.8,
+                  }}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                />
+                {/* Lens effect */}
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 2,
+                    left: 2,
+                    right: 2,
+                    bottom: 2,
+                    borderRadius: 10,
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(255,255,255,0.06)',
+                    opacity: 0.3,
+                  }}
+                />
+                {/* Content */}
+                <View style={{ position: 'relative', zIndex: 10 }}>
+                  <Text
+                    className="mb-4 font-semibold text-lg"
+                    style={{ color: colors.foreground, ...TEXT_STYLES.semibold }}>
+                    Account Information
+                  </Text>
 
-                <View className="space-y-3">
-                  <View>
-                    <Text className="text-sm font-medium" style={{ color: colors.grey2 }}>
-                      Name
-                    </Text>
-                    <Text className="text-base" style={{ color: colors.foreground }}>
-                      {user.firstName || user.lastName
-                        ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
-                        : 'Not set'}
-                    </Text>
-                  </View>
-
-                  <View>
-                    <Text className="text-sm font-medium" style={{ color: colors.grey2 }}>
-                      Email
-                    </Text>
-                    <Text className="text-base" style={{ color: colors.foreground }}>
-                      {user.email}
-                    </Text>
-                  </View>
-
-                  {user.role && (
+                  <View className="space-y-3">
                     <View>
-                      <Text className="text-sm font-medium" style={{ color: colors.grey2 }}>
-                        Role
+                      <Text
+                        className="font-medium text-sm"
+                        style={{ color: colors.grey2, ...TEXT_STYLES.medium }}>
+                        Name
                       </Text>
-                      <Text className="text-base" style={{ color: colors.foreground }}>
-                        {user.role.name || user.role.id}
+                      <Text
+                        className="text-base"
+                        style={{ color: colors.foreground, ...TEXT_STYLES.regular }}>
+                        {user.firstName || user.lastName
+                          ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                          : 'Not set'}
                       </Text>
                     </View>
-                  )}
 
-                  <View>
-                    <Text className="text-sm font-medium" style={{ color: colors.grey2 }}>
-                      Avatar
-                    </Text>
-                    <Text className="text-base" style={{ color: colors.foreground }}>
-                      {user.avatar ? `Avatar ${user.avatar}` : 'Default'}
-                    </Text>
+                    <View>
+                      <Text
+                        className="font-medium text-sm"
+                        style={{ color: colors.grey2, ...TEXT_STYLES.medium }}>
+                        Email
+                      </Text>
+                      <Text
+                        className="text-base"
+                        style={{ color: colors.foreground, ...TEXT_STYLES.regular }}>
+                        {user.email}
+                      </Text>
+                    </View>
+
+                    {user.role && (
+                      <View>
+                        <Text
+                          className="font-medium text-sm"
+                          style={{ color: colors.grey2, ...TEXT_STYLES.medium }}>
+                          Role
+                        </Text>
+                        <Text
+                          className="text-base"
+                          style={{ color: colors.foreground, ...TEXT_STYLES.regular }}>
+                          {user.role.name || user.role.id}
+                        </Text>
+                      </View>
+                    )}
+
+                    <View>
+                      <Text
+                        className="font-medium text-sm"
+                        style={{ color: colors.grey2, ...TEXT_STYLES.medium }}>
+                        Avatar
+                      </Text>
+                      <Text
+                        className="text-base"
+                        style={{ color: colors.foreground, ...TEXT_STYLES.regular }}>
+                        {user.avatar ? `Avatar ${user.avatar}` : 'Default'}
+                      </Text>
+                    </View>
                   </View>
                 </View>
               </View>
@@ -202,20 +269,66 @@ export default function ProfileTab() {
 
             {/* Actions Section */}
             <View className="mt-8 px-6">
-              <TouchableOpacity
-                className="rounded-lg"
-                onPress={handleLogout}>
-                <LinearGradient
-                  colors={['#dc2626', '#991b1b']} // red gradient for destructive action
+              <TouchableOpacity className="rounded-lg" onPress={handleLogout}>
+                <View
                   style={{
+                    borderRadius: 12,
                     paddingVertical: 16,
-                    borderRadius: 8,
+                    backgroundColor: isDark ? 'rgba(220, 38, 38, 0.15)' : 'rgba(220, 38, 38, 0.08)',
+                    borderColor: isDark ? 'rgba(220, 38, 38, 0.4)' : 'rgba(220, 38, 38, 0.3)',
+                    borderWidth: 1,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    overflow: 'hidden',
+                    position: 'relative',
                     alignItems: 'center',
-                  }}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}>
-                  <Text className="text-center text-base font-semibold text-white">Sign Out</Text>
-                </LinearGradient>
+                  }}>
+                  {/* Gloss overlay with red tint */}
+                  <LinearGradient
+                    colors={
+                      isDark
+                        ? ['rgba(220, 38, 38, 0.4)', 'rgba(220, 38, 38, 0.15)', 'transparent']
+                        : ['rgba(220, 38, 38, 0.3)', 'rgba(220, 38, 38, 0.08)', 'transparent']
+                    }
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      height: '60%',
+                      borderRadius: 12,
+                      opacity: 0.8,
+                    }}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                  />
+                  {/* Lens effect */}
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 2,
+                      left: 2,
+                      right: 2,
+                      bottom: 2,
+                      borderRadius: 10,
+                      backgroundColor: isDark
+                        ? 'rgba(220, 38, 38, 0.08)'
+                        : 'rgba(220, 38, 38, 0.04)',
+                      opacity: 0.3,
+                    }}
+                  />
+                  {/* Content */}
+                  <View style={{ position: 'relative', zIndex: 10 }}>
+                    <Text
+                      className="text-center font-semibold text-base"
+                      style={{ color: isDark ? 'white' : 'black', ...TEXT_STYLES.semibold }}>
+                      Sign Out
+                    </Text>
+                  </View>
+                </View>
               </TouchableOpacity>
             </View>
           </>

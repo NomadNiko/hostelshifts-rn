@@ -19,11 +19,11 @@ interface LoadingSpinnerProps {
   minDisplayTime?: number;
 }
 
-const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
-  size = 100, 
+const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
+  size = 100,
   color = '#ffffff',
   backgroundColor = 'transparent',
-  minDisplayTime = 1500
+  minDisplayTime = 1500,
 }) => {
   const progress = useSharedValue(0);
   const [shouldShow, setShouldShow] = useState(true);
@@ -37,41 +37,21 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       [0, size * 0.2, size * 0.4, size * 0.2, 0]
     );
 
-    const rotate = interpolate(
-      progress.value,
-      [0, 0.25, 0.5, 0.75, 1],
-      [0, 22.5, 45, 67.5, 90]
-    );
+    const rotate = interpolate(progress.value, [0, 0.25, 0.5, 0.75, 1], [0, 22.5, 45, 67.5, 90]);
 
-    const scaleY = interpolate(
-      progress.value,
-      [0, 0.5, 1],
-      [1, 0.9, 1]
-    );
+    const scaleY = interpolate(progress.value, [0, 0.5, 1], [1, 0.9, 1]);
 
-    const borderRadius = interpolate(
-      progress.value,
-      [0, 0.17, 0.5, 1],
-      [8, 8, size * 0.8, 8]
-    );
+    const borderRadius = interpolate(progress.value, [0, 0.17, 0.5, 1], [8, 8, size * 0.8, 8]);
 
     return {
-      transform: [
-        { translateY },
-        { rotate: `${rotate}deg` },
-        { scaleY }
-      ],
+      transform: [{ translateY }, { rotate: `${rotate}deg` }, { scaleY }],
       borderRadius: Math.min(borderRadius, size / 2),
     };
   });
 
   // Shadow animation
   const shadowAnimatedStyle = useAnimatedStyle(() => {
-    const scaleX = interpolate(
-      progress.value,
-      [0, 0.5, 1],
-      [1, 1.2, 1]
-    );
+    const scaleX = interpolate(progress.value, [0, 0.5, 1], [1, 1.2, 1]);
 
     return {
       transform: [{ scaleX }],
@@ -83,11 +63,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
 
   useEffect(() => {
     // Start the animation
-    progress.value = withRepeat(
-      withTiming(1, { duration: 500, easing: Easing.linear }),
-      -1,
-      false
-    );
+    progress.value = withRepeat(withTiming(1, { duration: 500, easing: Easing.linear }), -1, false);
 
     // Minimum display time
     const timer = setTimeout(() => {
@@ -102,26 +78,28 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }
 
   return (
-    <View style={{ 
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      width: screenWidth,
-      height: screenHeight,
-      backgroundColor: backgroundColor,
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 99999,
-      elevation: 99999,
-    }}>
-      <View style={{ 
-        width: size, 
-        height: size + shadowTop + shadowHeight, 
-        position: 'relative',
-        alignItems: 'center'
+    <View
+      style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: screenWidth,
+        height: screenHeight,
+        backgroundColor: backgroundColor,
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 99999,
+        elevation: 99999,
       }}>
+      <View
+        style={{
+          width: size,
+          height: size + shadowTop + shadowHeight,
+          position: 'relative',
+          alignItems: 'center',
+        }}>
         {/* Cube with Gradient */}
         <Animated.View
           style={[
@@ -146,7 +124,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
             end={{ x: 1, y: 1 }}
           />
         </Animated.View>
-        
+
         {/* Shadow */}
         <Animated.View
           style={[

@@ -65,7 +65,9 @@ export function getAvatarColor(avatarNumber: number | null | undefined): string 
 /**
  * Get avatar image source with optimization
  */
-export function getAvatarImage(avatarNumber: number | null | undefined): ImageSourcePropType | null {
+export function getAvatarImage(
+  avatarNumber: number | null | undefined
+): ImageSourcePropType | null {
   if (!avatarNumber || avatarNumber < 1 || avatarNumber > 20) {
     return AVATAR_IMAGES[1]; // Default to first image if no avatar
   }

@@ -7,6 +7,7 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useConversations } from '../contexts/ConversationsContext';
@@ -26,7 +27,7 @@ interface ConversationScreenProps {
 
 export default function ConversationScreen({ conversationId, onBack }: ConversationScreenProps) {
   const { user } = useAuth();
-  const { currentConversation, messages, loadMessages, sendMessage, sendingMessage } =
+  const { currentConversation, messages, loadMessages, sendMessage, uploadImageMessage, sendingMessage } =
     useConversations();
 
   const [messageText, setMessageText] = useState('');
@@ -75,18 +76,35 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
     }
   };
 
+  const handleImageUpload = async (imageUri: string, fileName: string) => {
+    if (sendingMessage) return;
+
+    try {
+      await uploadImageMessage(conversationId, imageUri, fileName, messageText.trim());
+      setMessageText(''); // Clear the text input after successful upload
+      // Scroll to bottom after sending
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'Failed to upload image');
+    }
+  };
+
   if (!currentConversation) {
     return (
       <>
         <View className="flex-1 rounded-t" style={{ backgroundColor: colors.background }}>
           {/* Fixed Header */}
-          <View style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 1000,
-          }}>
+          <View
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              zIndex: 1000,
+            }}>
             <SafeAreaView style={{ backgroundColor: colors.card }}>
               <View
                 className="flex-row items-center px-6 py-2"
@@ -97,7 +115,7 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
                   style={{ backgroundColor: colors.grey5 }}>
                   <Ionicons name="arrow-back" size={24} color={colors.foreground} />
                 </TouchableOpacity>
-                <Text className="text-xl font-bold" style={{ color: colors.foreground }}>
+                <Text className="font-bold text-xl" style={{ color: colors.foreground }}>
                   Loading...
                 </Text>
               </View>
@@ -115,17 +133,22 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
         className="flex-1 rounded-t"
         style={{ backgroundColor: colors.background }}
         behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
+        keyboardVerticalOffset={Platform.OS === 'ios' ? -100 : -80}>
         {/* Fixed Header */}
-        <View style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 1000,
-        }}>
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1000,
+          }}>
           <SafeAreaView edges={['top']} style={{ backgroundColor: colors.card }}>
-            <ConversationHeader conversation={currentConversation} onBack={onBack} isDark={isDark} />
+            <ConversationHeader
+              conversation={currentConversation}
+              onBack={onBack}
+              isDark={isDark}
+            />
           </SafeAreaView>
         </View>
 
@@ -149,6 +172,10 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
                 />
               )
             )
+          ) : isLoading ? (
+            <View className="flex-1 items-center justify-center py-16">
+              <ActivityIndicator size="large" color={colors.primary} />
+            </View>
           ) : (
             <View
               className="mx-4 my-8 flex-1 items-center justify-center rounded py-16"
@@ -157,11 +184,11 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
                 <Ionicons name="chatbubbles-outline" size={64} color={colors.grey2} />
               </View>
               <Text
-                className="mt-6 text-center text-lg font-semibold"
+                className="mt-6 text-center font-semibold text-lg"
                 style={{ color: colors.foreground }}>
                 No Messages Yet
               </Text>
-              <Text className="mt-2 mb-4 px-6 text-center" style={{ color: colors.grey2 }}>
+              <Text className="mb-4 mt-2 px-6 text-center" style={{ color: colors.grey2 }}>
                 Start the conversation by sending a message below.
               </Text>
             </View>
@@ -174,16 +201,13 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
             value={messageText}
             onChangeText={setMessageText}
             onSend={handleSendMessage}
+            onImageUpload={handleImageUpload}
             isSending={sendingMessage}
             isDark={isDark}
           />
         </View>
       </KeyboardAvoidingView>
-      
-      {/* Full Screen Loading Overlay */}
-      {isLoading && conversationMessages.length === 0 && (
-        <LoadingSpinner size={100} color={colors.primary} />
-      )}
+
     </>
   );
 }

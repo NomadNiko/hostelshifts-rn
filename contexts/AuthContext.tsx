@@ -38,9 +38,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         const userInfo = await authService.getCurrentUser();
         console.log('AuthContext: User info:', userInfo);
         setUser(userInfo);
-        
+
         // Preload avatar images for better performance
-        preloadAvatarImages().catch(error => {
+        preloadAvatarImages().catch((error) => {
           console.warn('Avatar preloading failed:', error);
         });
       } else {

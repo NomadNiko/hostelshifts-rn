@@ -12,48 +12,61 @@ export const TabBarIcon = (props: {
   const { isDark } = useTheme();
   const colors = isDark ? COLORS.dark : COLORS.light;
   const { focused, ...iconProps } = props;
-  
+
   return (
     <View style={styles.tabBarIconContainer}>
       {/* Main glass container with backdrop blur effect */}
-      <View style={[
-        styles.glassContainer,
-        {
-          backgroundColor: focused 
-            ? (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(255,255,255,0.25)')
-            : (isDark ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.15)'),
-          borderColor: focused 
-            ? (isDark ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.6)')
-            : (isDark ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.3)'),
-          borderWidth: focused ? 1.5 : 1,
-        }
-      ]}>
-        
+      <View
+        style={[
+          styles.glassContainer,
+          {
+            backgroundColor: focused
+              ? isDark
+                ? 'rgba(255,255,255,0.12)'
+                : 'rgba(255,255,255,0.25)'
+              : isDark
+                ? 'rgba(255,255,255,0.06)'
+                : 'rgba(255,255,255,0.15)',
+            borderColor: focused
+              ? isDark
+                ? 'rgba(255,255,255,0.4)'
+                : 'rgba(255,255,255,0.6)'
+              : isDark
+                ? 'rgba(255,255,255,0.2)'
+                : 'rgba(255,255,255,0.3)',
+            borderWidth: focused ? 1.5 : 1,
+          },
+        ]}>
         {/* Gloss overlay - top highlight */}
         <LinearGradient
-          colors={focused 
-            ? (isDark 
-                ? ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent'] 
-                : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.2)', 'transparent'])
-            : (isDark 
-                ? ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)', 'transparent'] 
-                : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent'])
+          colors={
+            focused
+              ? isDark
+                ? ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
+                : ['rgba(255,255,255,0.6)', 'rgba(255,255,255,0.2)', 'transparent']
+              : isDark
+                ? ['rgba(255,255,255,0.2)', 'rgba(255,255,255,0.05)', 'transparent']
+                : ['rgba(255,255,255,0.4)', 'rgba(255,255,255,0.1)', 'transparent']
           }
           style={styles.glossOverlay}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 1 }}
         />
-        
+
         {/* Lens effect - subtle inner glow */}
-        <View style={[
-          styles.lensEffect,
-          {
-            backgroundColor: focused 
-              ? (isDark ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)')
-              : 'transparent',
-          }
-        ]} />
-        
+        <View
+          style={[
+            styles.lensEffect,
+            {
+              backgroundColor: focused
+                ? isDark
+                  ? 'rgba(255,255,255,0.05)'
+                  : 'rgba(255,255,255,0.1)'
+                : 'transparent',
+            },
+          ]}
+        />
+
         {/* Icon */}
         <View style={styles.iconContainer}>
           <Ionicons size={24} {...iconProps} />

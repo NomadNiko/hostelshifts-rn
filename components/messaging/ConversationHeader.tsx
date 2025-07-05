@@ -25,11 +25,10 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
   const participantCount = conversation.participants?.length || 0;
   const isGroupChat = participantCount > 2; // Show participants for any multi-user chat
-  
+
   // Show "Group Chat" for groups without a title, otherwise use util function
-  const displayName = isGroupChat && !conversation.title 
-    ? "Group Chat" 
-    : getConversationDisplayName(conversation);
+  const displayName =
+    isGroupChat && !conversation.title ? 'Group Chat' : getConversationDisplayName(conversation);
 
   const toggleParticipants = () => {
     setShowParticipants(!showParticipants);
@@ -68,7 +67,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         </TouchableOpacity>
 
         <View className="flex-1">
-          <Text className="text-xl font-bold" style={styles.colors.textPrimary}>
+          <Text className="font-bold text-xl" style={styles.colors.textPrimary}>
             {displayName}
           </Text>
           <Text className="text-sm" style={styles.colors.textCaption}>
@@ -82,10 +81,10 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
             className="rounded p-2"
             style={styles.colors.grey5}
             activeOpacity={0.7}>
-            <Ionicons 
-              name={showParticipants ? "chevron-up" : "people"} 
-              size={24} 
-              color={colors.foreground} 
+            <Ionicons
+              name={showParticipants ? 'chevron-up' : 'people'}
+              size={24}
+              color={colors.foreground}
             />
           </TouchableOpacity>
         )}
@@ -93,15 +92,15 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
 
       {/* Participants Dropdown */}
       {isGroupChat && showParticipants && (
-        <View 
-          className="mx-6 mb-4 rounded-lg p-4"
-          style={{ backgroundColor: colors.grey5 }}>
+        <View className="mx-6 mb-4 rounded-lg p-4" style={{ backgroundColor: colors.grey5 }}>
           <Text className="mb-3 font-semibold" style={{ color: colors.foreground }}>
             Participants
           </Text>
           {conversation.participants?.map((participant, index) => (
-            <View key={participant._id || index} className="mb-2 flex-row items-center justify-between">
-              <View className="flex-row items-center flex-1">
+            <View
+              key={participant._id || index}
+              className="mb-2 flex-row items-center justify-between">
+              <View className="flex-1 flex-row items-center">
                 <View className="mr-3">
                   <AvatarDisplay
                     user={participant}
@@ -110,25 +109,27 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
                   />
                 </View>
                 <Text style={{ color: colors.foreground }}>
-                  {participant.firstName && participant.lastName 
+                  {participant.firstName && participant.lastName
                     ? `${participant.firstName} ${participant.lastName}`
                     : participant.email}
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => handleRemoveParticipant(
-                  participant._id,
-                  participant.firstName && participant.lastName 
-                    ? `${participant.firstName} ${participant.lastName}`
-                    : participant.email
-                )}
+                onPress={() =>
+                  handleRemoveParticipant(
+                    participant._id,
+                    participant.firstName && participant.lastName
+                      ? `${participant.firstName} ${participant.lastName}`
+                      : participant.email
+                  )
+                }
                 className="p-1"
                 activeOpacity={0.7}>
                 <Ionicons name="remove-circle" size={20} color={colors.destructive} />
               </TouchableOpacity>
             </View>
           ))}
-          
+
           {/* Add Participant Button */}
           <TouchableOpacity
             className="mt-3 rounded"
@@ -146,12 +147,10 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}>
               <Ionicons name="person-add" size={16} color="white" />
-              <Text className="ml-2 font-medium text-white">
-                Add Participant
-              </Text>
+              <Text className="ml-2 font-medium text-white">Add Participant</Text>
             </LinearGradient>
           </TouchableOpacity>
-          
+
           {/* Change Chat Name Button */}
           <TouchableOpacity
             className="mt-3 rounded"
@@ -169,14 +168,12 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 0 }}>
               <Ionicons name="pencil" size={16} color="white" />
-              <Text className="ml-2 font-medium text-white">
-                Change Chat Name
-              </Text>
+              <Text className="ml-2 font-medium text-white">Change Chat Name</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
       )}
-      
+
       {/* Edit Title Modal */}
       <EditConversationTitleModal
         visible={showEditTitleModal}
@@ -184,7 +181,7 @@ const ConversationHeader: React.FC<ConversationHeaderProps> = ({
         conversationId={conversation._id}
         currentTitle={conversation.title}
       />
-      
+
       {/* Add Participant Modal */}
       <AddParticipantModal
         visible={showAddParticipantModal}

@@ -35,8 +35,8 @@ const AVATAR_ASSETS = [
 export async function preloadAvatarImages(): Promise<void> {
   try {
     console.log('Preloading avatar images...');
-    const assets = AVATAR_ASSETS.map(asset => Asset.fromModule(asset));
-    await Promise.all(assets.map(asset => asset.downloadAsync()));
+    const assets = AVATAR_ASSETS.map((asset) => Asset.fromModule(asset));
+    await Promise.all(assets.map((asset) => asset.downloadAsync()));
     console.log('Avatar images preloaded successfully');
   } catch (error) {
     console.warn('Failed to preload some avatar images:', error);
@@ -49,10 +49,10 @@ export async function preloadAvatarImages(): Promise<void> {
 export async function preloadSpecificAvatars(avatarNumbers: number[]): Promise<void> {
   try {
     const assetsToPreload = avatarNumbers
-      .filter(num => num >= 1 && num <= 20)
-      .map(num => Asset.fromModule(AVATAR_ASSETS[num - 1]));
-    
-    await Promise.all(assetsToPreload.map(asset => asset.downloadAsync()));
+      .filter((num) => num >= 1 && num <= 20)
+      .map((num) => Asset.fromModule(AVATAR_ASSETS[num - 1]));
+
+    await Promise.all(assetsToPreload.map((asset) => asset.downloadAsync()));
   } catch (error) {
     console.warn('Failed to preload specific avatars:', error);
   }

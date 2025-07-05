@@ -19,7 +19,8 @@ interface MessageDisplayProps {
 export const useMessageList = (messages: Message[], currentUserId?: string) => {
   const processedMessages = useMemo((): MessageDisplayProps[] => {
     return messages.map((message, index) => {
-      const isOwnMessage = currentUserId && message.senderId && message.senderId._id === currentUserId;
+      const isOwnMessage =
+        currentUserId && message.senderId && message.senderId._id === currentUserId;
       const prevMessage = index > 0 ? messages[index - 1] : null;
       const nextMessage = index < messages.length - 1 ? messages[index + 1] : null;
 

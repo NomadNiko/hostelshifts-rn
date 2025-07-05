@@ -26,6 +26,9 @@ export interface Message {
   content: string;
   timestamp: string;
   type?: 'user' | 'system'; // Added type field
+  imageUrl?: string; // Image URL for image messages
+  fileName?: string; // Original filename
+  fileSize?: number; // File size in bytes
   createdAt: string;
   updatedAt: string;
 }
@@ -60,6 +63,7 @@ export interface MessageInputProps {
   value: string;
   onChangeText: (text: string) => void;
   onSend: () => void;
+  onImageUpload?: (imageUri: string, fileName: string) => void;
   isSending: boolean;
   placeholder?: string;
   isDark: boolean;

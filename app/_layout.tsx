@@ -1,7 +1,13 @@
 import '../global.css';
 
 import { Stack } from 'expo-router';
-import { useFonts, Oxanium_400Regular, Oxanium_500Medium, Oxanium_600SemiBold, Oxanium_700Bold } from '@expo-google-fonts/oxanium';
+import {
+  useFonts,
+  Oxanium_400Regular,
+  Oxanium_500Medium,
+  Oxanium_600SemiBold,
+  Oxanium_700Bold,
+} from '@expo-google-fonts/oxanium';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { SchedulesProvider } from '../contexts/SchedulesContext';

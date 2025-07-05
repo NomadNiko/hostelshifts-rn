@@ -1,12 +1,7 @@
 import React from 'react';
-import {
-  View,
-  TextInput,
-  TouchableOpacity,
-  Platform,
-  Alert,
-} from 'react-native';
+import { View, TextInput, TouchableOpacity, Platform, Alert, ActionSheetIOS } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { MessageInputProps } from '../../types/messaging';
 import { createMessagingStyles, DIMENSIONS } from './styles';
 import { COLORS } from '../../theme/colors';
@@ -16,6 +11,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   value,
   onChangeText,
   onSend,
+  onImageUpload,
   isSending,
   placeholder = 'Type a message...',
   isDark,
@@ -23,8 +19,73 @@ const MessageInput: React.FC<MessageInputProps> = ({
   const colors = isDark ? COLORS.dark : COLORS.light;
   const styles = createMessagingStyles(colors, isDark);
 
+  const requestPermissions = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to upload images!');
+      return false;
+    }
+    return true;
+  };
+
+  const pickImage = async (source: 'camera' | 'library') => {
+    const hasPermission = await requestPermissions();
+    if (!hasPermission) return;
+
+    try {
+      let result;
+      if (source === 'camera') {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
+        });
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 0.8,
+        });
+      }
+
+      if (!result.canceled && result.assets[0]) {
+        const asset = result.assets[0];
+        const fileName = asset.fileName || `image_${Date.now()}.jpg`;
+        onImageUpload?.(asset.uri, fileName);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to pick image. Please try again.');
+    }
+  };
+
   const handleAttachment = () => {
-    Alert.alert('Info', 'Attachments coming soon!');
+    if (Platform.OS === 'ios') {
+      ActionSheetIOS.showActionSheetWithOptions(
+        {
+          options: ['Cancel', 'Take Photo', 'Choose from Library'],
+          cancelButtonIndex: 0,
+        },
+        (buttonIndex) => {
+          if (buttonIndex === 1) {
+            pickImage('camera');
+          } else if (buttonIndex === 2) {
+            pickImage('library');
+          }
+        }
+      );
+    } else {
+      Alert.alert(
+        'Select Image',
+        'Choose an option',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Take Photo', onPress: () => pickImage('camera') },
+          { text: 'Choose from Library', onPress: () => pickImage('library') },
+        ]
+      );
+    }
   };
 
   const isEnabled = value.trim() && !isSending;

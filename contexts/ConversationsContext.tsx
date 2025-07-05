@@ -27,8 +27,12 @@ interface ConversationsContextType {
   selectConversation: (conversation: Conversation) => void;
   loadMessages: (conversationId: string, page?: number) => Promise<void>;
   sendMessage: (conversationId: string, content: string) => Promise<void>;
+  uploadImageMessage: (conversationId: string, imageUri: string, fileName: string, content?: string) => Promise<void>;
   createConversation: (data: CreateConversationDto) => Promise<Conversation>;
-  updateConversation: (conversationId: string, data: UpdateConversationDto) => Promise<Conversation>;
+  updateConversation: (
+    conversationId: string,
+    data: UpdateConversationDto
+  ) => Promise<Conversation>;
   searchUsers: (searchTerm: string) => Promise<User[]>;
   refreshData: () => Promise<void>;
   deleteConversation: (conversationId: string) => Promise<void>;
@@ -88,13 +92,11 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
   const loadMessages = async (conversationId: string, page: number = 1) => {
     try {
-
       const messagesResponse: MessagesResponse = await conversationsService.getMessages(
         conversationId,
         page,
         20
       );
-
 
       setMessages((prev) => {
         const existingMessages = prev[conversationId] || [];
@@ -120,7 +122,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
         ...prev,
         [conversationId]: messagesResponse.messages.length === messagesResponse.limit,
       }));
-
     } catch (error) {
       console.error('❌ ConversationsContext: Error loading messages:', error);
       setError(error instanceof Error ? error.message : 'Failed to load messages');
@@ -133,7 +134,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
       const messageData: SendMessageDto = { content };
       const sentMessage = await conversationsService.sendMessage(conversationId, messageData);
-
 
       // Add the new message to the end of the messages list (newest at bottom)
       setMessages((prev) => ({
@@ -149,10 +149,38 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
           )
           .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
       );
-
     } catch (error) {
       console.error('❌ ConversationsContext: Error sending message:', error);
       setError(error instanceof Error ? error.message : 'Failed to send message');
+      throw error;
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const uploadImageMessage = async (conversationId: string, imageUri: string, fileName: string, content: string = '') => {
+    try {
+      setSendingMessage(true);
+
+      const sentMessage = await conversationsService.uploadImageMessage(conversationId, imageUri, fileName, content);
+
+      // Add the new message to the end of the messages list (newest at bottom)
+      setMessages((prev) => ({
+        ...prev,
+        [conversationId]: [...(prev[conversationId] || []), sentMessage],
+      }));
+
+      // Update the conversation's lastMessageAt
+      setConversations((prev) =>
+        prev
+          .map((conv) =>
+            conv._id === conversationId ? { ...conv, lastMessageAt: sentMessage.timestamp } : conv
+          )
+          .sort((a, b) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime())
+      );
+    } catch (error) {
+      console.error('❌ ConversationsContext: Error uploading image message:', error);
+      setError(error instanceof Error ? error.message : 'Failed to upload image');
       throw error;
     } finally {
       setSendingMessage(false);
@@ -180,7 +208,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
   const searchUsers = async (searchTerm: string): Promise<User[]> => {
     try {
-
       const users = await conversationsService.searchUsers(searchTerm);
 
       return users;
@@ -191,15 +218,19 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     }
   };
 
-  const updateConversation = async (conversationId: string, data: UpdateConversationDto): Promise<Conversation> => {
+  const updateConversation = async (
+    conversationId: string,
+    data: UpdateConversationDto
+  ): Promise<Conversation> => {
     try {
-      const updatedConversation = await conversationsService.updateConversation(conversationId, data);
+      const updatedConversation = await conversationsService.updateConversation(
+        conversationId,
+        data
+      );
 
       // Update the conversation in the list
       setConversations((prev) =>
-        prev.map((conv) =>
-          conv._id === conversationId ? updatedConversation : conv
-        )
+        prev.map((conv) => (conv._id === conversationId ? updatedConversation : conv))
       );
 
       // Update current conversation if it's the one being updated
@@ -217,7 +248,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
 
   const deleteConversation = async (conversationId: string) => {
     try {
-
       await conversationsService.deleteConversation(conversationId);
 
       // Remove from conversations list
@@ -234,7 +264,6 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
       if (currentConversation?._id === conversationId) {
         setCurrentConversation(null);
       }
-
     } catch (error) {
       console.error('❌ ConversationsContext: Error deleting conversation:', error);
       setError(error instanceof Error ? error.message : 'Failed to delete conversation');
@@ -246,15 +275,19 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     await loadConversations();
   };
 
-  const addParticipant = async (conversationId: string, participantId: string): Promise<Conversation> => {
+  const addParticipant = async (
+    conversationId: string,
+    participantId: string
+  ): Promise<Conversation> => {
     try {
-      const updatedConversation = await conversationsService.addParticipant(conversationId, participantId);
+      const updatedConversation = await conversationsService.addParticipant(
+        conversationId,
+        participantId
+      );
 
       // Update the conversation in the list
       setConversations((prev) =>
-        prev.map((conv) =>
-          conv._id === conversationId ? updatedConversation : conv
-        )
+        prev.map((conv) => (conv._id === conversationId ? updatedConversation : conv))
       );
 
       // Update current conversation if it's the one being updated
@@ -273,15 +306,19 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     }
   };
 
-  const removeParticipant = async (conversationId: string, participantId: string): Promise<Conversation> => {
+  const removeParticipant = async (
+    conversationId: string,
+    participantId: string
+  ): Promise<Conversation> => {
     try {
-      const updatedConversation = await conversationsService.removeParticipant(conversationId, participantId);
+      const updatedConversation = await conversationsService.removeParticipant(
+        conversationId,
+        participantId
+      );
 
       // Update the conversation in the list
       setConversations((prev) =>
-        prev.map((conv) =>
-          conv._id === conversationId ? updatedConversation : conv
-        )
+        prev.map((conv) => (conv._id === conversationId ? updatedConversation : conv))
       );
 
       // Update current conversation if it's the one being updated
@@ -315,6 +352,7 @@ export const ConversationsProvider: React.FC<ConversationsProviderProps> = ({ ch
     selectConversation,
     loadMessages,
     sendMessage,
+    uploadImageMessage,
     createConversation,
     updateConversation,
     searchUsers,

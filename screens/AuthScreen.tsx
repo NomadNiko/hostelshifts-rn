@@ -35,7 +35,7 @@ const AuthScreen: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
-  
+
   // Animation values
   const slideAnim = new Animated.Value(0);
   const opacityAnim = new Animated.Value(0);
@@ -177,7 +177,6 @@ const AuthScreen: React.FC = () => {
         <ScrollView
           contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
           keyboardShouldPersistTaps="handled">
-          
           {/* Main Container */}
           <View
             style={{
@@ -185,11 +184,10 @@ const AuthScreen: React.FC = () => {
               width: '100%',
               alignSelf: 'center',
             }}>
-            
             {/* Header */}
             <View style={{ marginBottom: 32, alignItems: 'center' }}>
-              <Animated.View 
-                style={{ 
+              <Animated.View
+                style={{
                   marginBottom: 48,
                   opacity: opacityAnim,
                   transform: [
@@ -228,20 +226,23 @@ const AuthScreen: React.FC = () => {
                   lineHeight: 20,
                   ...TEXT_STYLES.regular,
                 }}>
-                {isSignUp 
-                  ? 'Sign up to manage your shifts' 
-                  : ''}
+                {isSignUp ? 'Sign up to manage your shifts' : ''}
               </Text>
             </View>
 
             {/* Form */}
             <View style={{ gap: 20 }}>
-              
               {/* Name Fields for Sign Up */}
               {isSignUp && (
                 <View style={{ flexDirection: 'row', gap: 12 }}>
                   <View style={{ flex: 1, gap: 8 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: colors.foreground,
+                        ...TEXT_STYLES.medium,
+                      }}>
                       First Name
                     </Text>
                     <TextInput
@@ -266,7 +267,13 @@ const AuthScreen: React.FC = () => {
                     />
                   </View>
                   <View style={{ flex: 1, gap: 8 }}>
-                    <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        fontWeight: '500',
+                        color: colors.foreground,
+                        ...TEXT_STYLES.medium,
+                      }}>
                       Last Name
                     </Text>
                     <TextInput
@@ -295,7 +302,13 @@ const AuthScreen: React.FC = () => {
 
               {/* Email Field */}
               <View style={{ gap: 8 }}>
-                <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: '500',
+                    color: colors.foreground,
+                    ...TEXT_STYLES.medium,
+                  }}>
                   Email
                 </Text>
                 <TextInput
@@ -323,8 +336,19 @@ const AuthScreen: React.FC = () => {
 
               {/* Password Field */}
               <View style={{ gap: 8 }}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: '500',
+                      color: colors.foreground,
+                      ...TEXT_STYLES.medium,
+                    }}>
                     Password
                   </Text>
                   {!isSignUp && (
@@ -381,7 +405,13 @@ const AuthScreen: React.FC = () => {
               {/* Confirm Password for Sign Up */}
               {isSignUp && (
                 <View style={{ gap: 8 }}>
-                  <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: '500',
+                      color: colors.foreground,
+                      ...TEXT_STYLES.medium,
+                    }}>
                     Confirm Password
                   </Text>
                   <View style={{ position: 'relative' }}>
@@ -450,7 +480,13 @@ const AuthScreen: React.FC = () => {
                   {isLoading ? (
                     <LoadingSpinner size={20} color="white" />
                   ) : (
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', ...TEXT_STYLES.semibold }}>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: 'white',
+                        ...TEXT_STYLES.semibold,
+                      }}>
                       {isSignUp ? 'Create Account' : 'Login'}
                     </Text>
                   )}
@@ -471,7 +507,13 @@ const AuthScreen: React.FC = () => {
                       clearForm();
                     }
                   }}>
-                  <Text style={{ fontSize: 14, fontWeight: '600', color: colors.primary, ...TEXT_STYLES.semibold }}>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      fontWeight: '600',
+                      color: colors.primary,
+                      ...TEXT_STYLES.semibold,
+                    }}>
                     {isSignUp ? 'Sign In' : 'Sign up'}
                   </Text>
                 </TouchableOpacity>
@@ -487,7 +529,14 @@ const AuthScreen: React.FC = () => {
         transparent={true}
         animationType="fade"
         onRequestClose={() => setShowForgotPassword(false)}>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.5)', padding: 24 }}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            padding: 24,
+          }}>
           <View
             style={{
               backgroundColor: colors.background,
@@ -507,12 +556,25 @@ const AuthScreen: React.FC = () => {
               }}>
               Reset Password
             </Text>
-            <Text style={{ fontSize: 14, color: colors.grey, textAlign: 'center', marginBottom: 32, ...TEXT_STYLES.regular }}>
+            <Text
+              style={{
+                fontSize: 14,
+                color: colors.grey,
+                textAlign: 'center',
+                marginBottom: 32,
+                ...TEXT_STYLES.regular,
+              }}>
               {"Enter your email and we'll send reset instructions."}
             </Text>
 
             <View style={{ marginBottom: 24, gap: 8 }}>
-              <Text style={{ fontSize: 14, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+              <Text
+                style={{
+                  fontSize: 14,
+                  fontWeight: '500',
+                  color: colors.foreground,
+                  ...TEXT_STYLES.medium,
+                }}>
                 Email
               </Text>
               <TextInput
@@ -550,7 +612,13 @@ const AuthScreen: React.FC = () => {
                   alignItems: 'center',
                 }}
                 onPress={() => setShowForgotPassword(false)}>
-                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.foreground, ...TEXT_STYLES.medium }}>
+                <Text
+                  style={{
+                    fontSize: 16,
+                    fontWeight: '500',
+                    color: colors.foreground,
+                    ...TEXT_STYLES.medium,
+                  }}>
                   Cancel
                 </Text>
               </TouchableOpacity>
@@ -577,7 +645,15 @@ const AuthScreen: React.FC = () => {
                   {isLoading ? (
                     <LoadingSpinner size={20} color="white" />
                   ) : (
-                    <Text style={{ fontSize: 16, fontWeight: '600', color: 'white', ...TEXT_STYLES.semibold }}>Send Reset</Text>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: 'white',
+                        ...TEXT_STYLES.semibold,
+                      }}>
+                      Send Reset
+                    </Text>
                   )}
                 </LinearGradient>
               </TouchableOpacity>

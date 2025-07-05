@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import timeClockService, { 
-  TimeClockEntry, 
-  TimeClockStatus, 
+import timeClockService, {
+  TimeClockEntry,
+  TimeClockStatus,
   TimeClockStatusResponse,
   ClockInRequest,
   ClockOutRequest,
   TimeClockEntriesResponse,
-  TimeClockQueryParams
+  TimeClockQueryParams,
 } from '../services/timeClockService';
 
 interface TimeClockContextType {
@@ -14,19 +14,19 @@ interface TimeClockContextType {
   currentStatus: TimeClockStatusResponse | null;
   isLoading: boolean;
   isClockedIn: boolean;
-  
+
   // Current session state
   currentEntry: TimeClockEntry | null;
   currentSessionMinutes: number;
   currentSessionDisplay: string;
-  
+
   // Time summaries
   todayWorkTime: { totalMinutes: number; totalHours: number; durationDisplay: string };
   weekWorkTime: { totalMinutes: number; totalHours: number; durationDisplay: string };
-  
+
   // Recent entries
   recentEntries: TimeClockEntry[];
-  
+
   // Actions
   clockIn: (request?: ClockInRequest) => Promise<void>;
   clockOut: (request?: ClockOutRequest) => Promise<void>;
@@ -45,15 +45,15 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [currentSessionMinutes, setCurrentSessionMinutes] = useState(0);
   const [currentSessionDisplay, setCurrentSessionDisplay] = useState('0h 0m');
   const [recentEntries, setRecentEntries] = useState<TimeClockEntry[]>([]);
-  const [todayWorkTime, setTodayWorkTime] = useState({ 
-    totalMinutes: 0, 
-    totalHours: 0, 
-    durationDisplay: '0h 0m' 
+  const [todayWorkTime, setTodayWorkTime] = useState({
+    totalMinutes: 0,
+    totalHours: 0,
+    durationDisplay: '0h 0m',
   });
-  const [weekWorkTime, setWeekWorkTime] = useState({ 
-    totalMinutes: 0, 
-    totalHours: 0, 
-    durationDisplay: '0h 0m' 
+  const [weekWorkTime, setWeekWorkTime] = useState({
+    totalMinutes: 0,
+    totalHours: 0,
+    durationDisplay: '0h 0m',
   });
 
   // Timer for updating current session display
@@ -66,7 +66,7 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
       setIsLoading(true);
       const status = await timeClockService.getCurrentStatus();
       setCurrentStatus(status);
-      
+
       if (status.isClockedIn && status.currentEntry) {
         setCurrentEntry(status.currentEntry);
         updateCurrentSessionTime(status.currentEntry.clockInTime);
@@ -88,12 +88,12 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
     try {
       setIsLoading(true);
       const entry = await timeClockService.clockIn(request);
-      
+
       // Refresh status after successful clock in
       await refreshStatus();
       await loadRecentEntries();
       await loadWorkTimeSummaries();
-      
+
       console.log('Successfully clocked in:', entry);
     } catch (error) {
       console.error('Error clocking in:', error);
@@ -107,12 +107,12 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
     try {
       setIsLoading(true);
       const entry = await timeClockService.clockOut(request);
-      
+
       // Refresh status after successful clock out
       await refreshStatus();
       await loadRecentEntries();
       await loadWorkTimeSummaries();
-      
+
       console.log('Successfully clocked out:', entry);
     } catch (error) {
       console.error('Error clocking out:', error);
@@ -124,9 +124,9 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const loadRecentEntries = async () => {
     try {
-      const response = await timeClockService.getMyTimeEntries({ 
+      const response = await timeClockService.getMyTimeEntries({
         limit: 10,
-        page: 1 
+        page: 1,
       });
       setRecentEntries(response.entries);
     } catch (error) {
@@ -140,7 +140,7 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
         timeClockService.getTodayWorkTime(),
         timeClockService.getWeekWorkTime(),
       ]);
-      
+
       setTodayWorkTime(today);
       setWeekWorkTime(week);
     } catch (error) {
@@ -148,7 +148,9 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   };
 
-  const getTimeEntries = async (params: TimeClockQueryParams = {}): Promise<TimeClockEntriesResponse> => {
+  const getTimeEntries = async (
+    params: TimeClockQueryParams = {}
+  ): Promise<TimeClockEntriesResponse> => {
     return timeClockService.getMyTimeEntries(params);
   };
 
@@ -160,11 +162,11 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   const startSessionTimer = (clockInTime: string) => {
     stopSessionTimer(); // Clear any existing timer
-    
+
     const timer = setInterval(() => {
       updateCurrentSessionTime(clockInTime);
     }, 60000); // Update every minute
-    
+
     setSessionTimer(timer);
   };
 
@@ -193,9 +195,12 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
 
   // Update work time summaries periodically
   useEffect(() => {
-    const summaryTimer = setInterval(() => {
-      loadWorkTimeSummaries();
-    }, 5 * 60 * 1000); // Update every 5 minutes
+    const summaryTimer = setInterval(
+      () => {
+        loadWorkTimeSummaries();
+      },
+      5 * 60 * 1000
+    ); // Update every 5 minutes
 
     return () => clearInterval(summaryTimer);
   }, []);
@@ -207,19 +212,19 @@ export const TimeClockProvider: React.FC<{ children: ReactNode }> = ({ children 
         currentStatus,
         isLoading,
         isClockedIn,
-        
+
         // Current session state
         currentEntry,
         currentSessionMinutes,
         currentSessionDisplay,
-        
+
         // Time summaries
         todayWorkTime,
         weekWorkTime,
-        
+
         // Recent entries
         recentEntries,
-        
+
         // Actions
         clockIn,
         clockOut,

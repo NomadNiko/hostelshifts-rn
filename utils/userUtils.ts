@@ -112,10 +112,12 @@ export const shouldShowMessageSender = (
 ): boolean => {
   // System messages don't show senders
   if (!currentMessage.senderId) return false;
-  
+
   return (
     !isOwnMessage &&
-    (!previousMessage || !previousMessage.senderId || previousMessage.senderId._id !== currentMessage.senderId._id)
+    (!previousMessage ||
+      !previousMessage.senderId ||
+      previousMessage.senderId._id !== currentMessage.senderId._id)
   );
 };
 
@@ -125,8 +127,12 @@ export const isLastMessageInGroup = (
 ): boolean => {
   // System messages are always their own group
   if (!currentMessage.senderId) return true;
-  
-  return !nextMessage || !nextMessage.senderId || nextMessage.senderId._id !== currentMessage.senderId._id;
+
+  return (
+    !nextMessage ||
+    !nextMessage.senderId ||
+    nextMessage.senderId._id !== currentMessage.senderId._id
+  );
 };
 
 export const isFirstMessageInGroup = (
@@ -135,8 +141,12 @@ export const isFirstMessageInGroup = (
 ): boolean => {
   // System messages are always their own group
   if (!currentMessage.senderId) return true;
-  
-  return !previousMessage || !previousMessage.senderId || previousMessage.senderId._id !== currentMessage.senderId._id;
+
+  return (
+    !previousMessage ||
+    !previousMessage.senderId ||
+    previousMessage.senderId._id !== currentMessage.senderId._id
+  );
 };
 
 export const getConversationPrimaryParticipant = (

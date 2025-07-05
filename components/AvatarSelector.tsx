@@ -73,15 +73,15 @@ export default function AvatarSelector({
           <View className="border-b px-6 py-4" style={{ borderBottomColor: colors.grey4 }}>
             <View className="flex-row items-center justify-between">
               <TouchableOpacity onPress={handleCancel}>
-                <Text className="text-base font-medium" style={{ color: colors.grey }}>
+                <Text className="font-medium text-base" style={{ color: colors.grey }}>
                   Cancel
                 </Text>
               </TouchableOpacity>
-              <Text className="text-lg font-semibold" style={{ color: colors.foreground }}>
+              <Text className="font-semibold text-lg" style={{ color: colors.foreground }}>
                 Choose Avatar
               </Text>
               <TouchableOpacity onPress={handleSave}>
-                <Text className="text-base font-semibold" style={{ color: colors.primary }}>
+                <Text className="font-semibold text-base" style={{ color: colors.primary }}>
                   Save
                 </Text>
               </TouchableOpacity>
@@ -98,7 +98,7 @@ export default function AvatarSelector({
                 size="large"
                 className="mb-4"
               />
-              <Text className="text-lg font-medium" style={{ color: colors.foreground }}>
+              <Text className="font-medium text-lg" style={{ color: colors.foreground }}>
                 Avatar {selectedAvatar}
               </Text>
               <Text className="text-sm" style={{ color: colors.grey2 }}>
@@ -116,7 +116,7 @@ export default function AvatarSelector({
               </TouchableOpacity>
 
               <View className="mx-8">
-                <Text className="text-center text-2xl font-bold" style={{ color: colors.primary }}>
+                <Text className="text-center font-bold text-2xl" style={{ color: colors.primary }}>
                   {selectedAvatar}
                 </Text>
                 <Text className="text-center text-xs" style={{ color: colors.grey2 }}>
