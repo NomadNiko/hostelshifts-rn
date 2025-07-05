@@ -170,6 +170,29 @@ class SchedulesService {
       throw error;
     }
   }
+
+  async getMyShifts(): Promise<ScheduleShift[]> {
+    try {
+      const headers = await this.getAuthHeaders();
+      const response = await fetch(`${API_BASE}${API_ENDPOINTS.userShifts.myShifts}`, {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return [];
+        }
+        throw new Error(`Failed to fetch my shifts: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Get my shifts error:', error);
+      return [];
+    }
+  }
 }
 
 export default new SchedulesService();

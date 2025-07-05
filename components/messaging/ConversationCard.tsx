@@ -32,28 +32,28 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
 
   return (
     <TouchableOpacity
-      className="mb-3 rounded"
+      className="mb-2 rounded"
       onPress={() => onPress(conversation)}
       activeOpacity={0.7}>
       <LinearGradient
         colors={['#1e3a8a', '#0891b2']}
         style={{
-          borderRadius: 16,
-          paddingHorizontal: 20,
-          paddingVertical: 20,
-          borderWidth: 2,
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          borderWidth: 1.5,
           borderColor: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
           shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.15,
-          shadowRadius: 4,
-          elevation: 3,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 2,
+          elevation: 2,
         }}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}>
       <View className="flex-row items-center">
         {/* Avatar */}
-        <View className="relative mr-4">
+        <View className="relative mr-3">
           <AvatarDisplay
             user={primaryParticipant}
             avatarNumber={primaryParticipant?.avatar}
@@ -64,8 +64,8 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
           <View
             className="absolute -bottom-1 -right-1 rounded border-2"
             style={{
-              width: 18,
-              height: 18,
+              width: 14,
+              height: 14,
               backgroundColor: '#10B981', // Green for online
               borderColor: colors.card,
             }}
@@ -74,7 +74,7 @@ const ConversationCard: React.FC<ConversationCardProps> = ({
 
         {/* Conversation Info */}
         <View className="flex-1 justify-center">
-          <View className="mb-3 flex-row items-start justify-between">
+          <View className="mb-2 flex-row items-start justify-between">
             <Text
               className="flex-1 text-2xl font-bold"
               style={{ color: 'white' }}

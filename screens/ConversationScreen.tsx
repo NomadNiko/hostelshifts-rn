@@ -169,13 +169,15 @@ export default function ConversationScreen({ conversationId, onBack }: Conversat
         </ScrollView>
 
         {/* Message Input */}
-        <MessageInput
-          value={messageText}
-          onChangeText={setMessageText}
-          onSend={handleSendMessage}
-          isSending={sendingMessage}
-          isDark={isDark}
-        />
+        <View style={{ paddingBottom: 100 }}>
+          <MessageInput
+            value={messageText}
+            onChangeText={setMessageText}
+            onSend={handleSendMessage}
+            isSending={sendingMessage}
+            isDark={isDark}
+          />
+        </View>
       </KeyboardAvoidingView>
       
       {/* Full Screen Loading Overlay */}

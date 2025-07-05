@@ -18,26 +18,31 @@ export default function ProfileTab() {
   const colors = isDark ? COLORS.dark : COLORS.light;
   const [showAvatarSelector, setShowAvatarSelector] = useState(false);
   const [isUpdatingAvatar, setIsUpdatingAvatar] = useState(false);
+  const [hasAnimated, setHasAnimated] = useState(false);
   
-  // Animation values
-  const slideAnim = new Animated.Value(0);
-  const opacityAnim = new Animated.Value(0);
+  // Animation values - use useRef to persist across renders
+  const slideAnim = React.useRef(new Animated.Value(0)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
 
-  // Start animation on component mount
+  // Start animation only once on component mount
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(slideAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: true,
-      }),
-      Animated.timing(opacityAnim, {
-        toValue: 1,
-        duration: 3000,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+    if (!hasAnimated) {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setHasAnimated(true);
+      });
+    }
+  }, [hasAnimated, slideAnim, opacityAnim]);
 
   const handleLogout = () => {
     Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
@@ -88,27 +93,33 @@ export default function ProfileTab() {
         {user && (
           <>
             {/* Logo Section */}
-            <Animated.View 
-              className="items-center px-6 py-6"
-              style={{ 
-                opacity: opacityAnim,
-                transform: [
-                  {
-                    scale: slideAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0.3, 1],
-                    }),
-                  },
-                  {
-                    translateY: slideAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [50, 0],
-                    }),
-                  },
-                ],
-              }}>
-              <HostelShiftsLogo width={280} height={93} />
-            </Animated.View>
+            {hasAnimated ? (
+              <View className="items-center px-6 py-6">
+                <HostelShiftsLogo width={280} height={93} />
+              </View>
+            ) : (
+              <Animated.View 
+                className="items-center px-6 py-6"
+                style={{ 
+                  opacity: opacityAnim,
+                  transform: [
+                    {
+                      scale: slideAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0.3, 1],
+                      }),
+                    },
+                    {
+                      translateY: slideAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [50, 0],
+                      }),
+                    },
+                  ],
+                }}>
+                <HostelShiftsLogo width={280} height={93} />
+              </Animated.View>
+            )}
 
             {/* Avatar Section */}
             <View className="items-center px-6 py-8">

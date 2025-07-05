@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { COLORS } from '../../theme/colors';
 import { TEXT_STYLES } from '../../theme/fonts';
 import { Ionicons } from '@expo/vector-icons';
 import { TimeClockEntry, TimeClockStatus } from '../../services/timeClockService';
+import schedulesService, { ScheduleShift } from '../../services/schedulesService';
 
 export default function TimeClockTab() {
   const { user } = useAuth();
@@ -38,8 +39,44 @@ export default function TimeClockTab() {
 
   const [refreshing, setRefreshing] = useState(false);
   const [clockActionLoading, setClockActionLoading] = useState(false);
+  const [upcomingShift, setUpcomingShift] = useState<ScheduleShift | null>(null);
+  const [upcomingShiftLoading, setUpcomingShiftLoading] = useState(true);
 
   const colors = isDark ? COLORS.dark : COLORS.light;
+
+  const fetchUpcomingShift = async () => {
+    try {
+      setUpcomingShiftLoading(true);
+      const myShifts = await schedulesService.getMyShifts();
+      
+      if (myShifts.length === 0) {
+        setUpcomingShift(null);
+        return;
+      }
+      
+      // Filter to only future shifts and get the next one
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const futureShifts = myShifts
+        .filter(shift => {
+          const shiftDate = new Date(shift.date);
+          shiftDate.setHours(0, 0, 0, 0);
+          return shiftDate >= today;
+        })
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      setUpcomingShift(futureShifts.length > 0 ? futureShifts[0] : null);
+    } catch (error) {
+      console.error('Error fetching upcoming shift:', error);
+    } finally {
+      setUpcomingShiftLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUpcomingShift();
+  }, [user]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -48,6 +85,7 @@ export default function TimeClockTab() {
         refreshStatus(),
         loadRecentEntries(),
         loadWorkTimeSummaries(),
+        fetchUpcomingShift(),
       ]);
     } catch (error) {
       console.error('Error refreshing data:', error);
@@ -267,6 +305,77 @@ export default function TimeClockTab() {
               </Text>
             </LinearGradient>
           </View>
+
+          {/* Upcoming Shift Card */}
+          {upcomingShiftLoading ? (
+            <View style={{
+              backgroundColor: colors.card,
+              borderRadius: 16,
+              padding: 20,
+              marginBottom: 24,
+              borderWidth: 1,
+              borderColor: colors.grey5,
+              alignItems: 'center',
+            }}>
+              <ActivityIndicator size="small" color={colors.primary} />
+              <Text style={{
+                color: colors.grey2,
+                marginTop: 8,
+                ...TEXT_STYLES.regular,
+              }}>Loading upcoming shift...</Text>
+            </View>
+          ) : upcomingShift ? (
+            <View style={{ borderRadius: 16, marginBottom: 24 }}>
+              <LinearGradient
+                colors={isDark ? ['#1e3a8a', '#1e40af'] : ['#eff6ff', '#dbeafe']}
+                style={{
+                  borderRadius: 16,
+                  padding: 20,
+                  borderWidth: 1,
+                  borderColor: colors.primary,
+                }}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                  <Ionicons name="calendar-outline" size={20} color={isDark ? 'white' : colors.primary} />
+                  <Text style={{
+                    fontSize: 18,
+                    fontWeight: '600',
+                    color: isDark ? 'white' : colors.foreground,
+                    marginLeft: 8,
+                    ...TEXT_STYLES.semibold,
+                  }}>Upcoming Shift</Text>
+                </View>
+                
+                {upcomingShift.shiftType && (
+                  <Text style={{
+                    fontSize: 20,
+                    fontWeight: '700',
+                    color: isDark ? '#fbbf24' : colors.primary,
+                    marginBottom: 4,
+                    ...TEXT_STYLES.bold,
+                  }}>{upcomingShift.shiftType.name}</Text>
+                )}
+                
+                <Text style={{
+                  fontSize: 16,
+                  color: isDark ? '#e2e8f0' : colors.grey2,
+                  marginBottom: 4,
+                  ...TEXT_STYLES.medium,
+                }}>{new Date(upcomingShift.date).toDateString()}</Text>
+                
+                {upcomingShift.shiftType && (
+                  <Text style={{
+                    fontSize: 14,
+                    color: isDark ? '#cbd5e1' : colors.grey,
+                    ...TEXT_STYLES.regular,
+                  }}>
+                    {upcomingShift.shiftType.startTime} - {upcomingShift.shiftType.endTime}
+                  </Text>
+                )}
+              </LinearGradient>
+            </View>
+          ) : null}
 
           {/* Clock In/Out Button */}
           <TouchableOpacity

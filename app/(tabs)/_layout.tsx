@@ -10,7 +10,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={() => ({
-        tabBarActiveTintColor: isDark ? COLORS.dark.primary : COLORS.light.primary,
+        tabBarActiveTintColor: isDark ? COLORS.dark.foreground : COLORS.light.foreground,
         tabBarInactiveTintColor: isDark ? COLORS.dark.grey : COLORS.light.grey,
         tabBarStyle: {
           backgroundColor: 'transparent',
@@ -19,8 +19,7 @@ export default function TabLayout() {
           shadowOpacity: 0,
           position: 'absolute',
           paddingHorizontal: 20,
-          paddingBottom: 34,
-          paddingTop: 16,
+          paddingTop: 6,
         },
         tabBarShowLabel: false,
         tabBarItemStyle: {
@@ -37,7 +36,9 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Schedules',
-          tabBarIcon: ({ color, focused }) => <TabBarIcon name="calendar" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="calendar" color={color} focused={focused} />
+          ),
           headerShown: false,
         }}
       />
@@ -45,7 +46,9 @@ export default function TabLayout() {
         name="time-clock"
         options={{
           title: 'Time Clock',
-          tabBarIcon: ({ color, focused }) => <TabBarIcon name="timer" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="timer" color={color} focused={focused} />
+          ),
           headerShown: false,
         }}
       />
@@ -53,7 +56,9 @@ export default function TabLayout() {
         name="conversations"
         options={{
           title: 'Messages',
-          tabBarIcon: ({ color, focused }) => <TabBarIcon name="chatbubbles" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="chatbubbles" color={color} focused={focused} />
+          ),
           headerShown: false,
         }}
       />
@@ -61,7 +66,9 @@ export default function TabLayout() {
         name="two"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, focused }) => <TabBarIcon name="person" color={color} focused={focused} />,
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon name="person" color={color} focused={focused} />
+          ),
           headerShown: false,
         }}
       />
